@@ -1,3 +1,23 @@
-from django.shortcuts import render
+from rest_framework import status
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-# Create your views here.
+from .serializers import RegisterSerializer
+
+
+class RegisterAPIView(APIView):
+    """Public sign-up: anyone can create a CUSTOMER account."""
+
+    # Overrides the global IsAuthenticated default: an anonymous visitor
+    # must be able to register before they have any credentials.
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response(
+            RegisterSerializer(user).data,
+            status=status.HTTP_201_CREATED,
+        )

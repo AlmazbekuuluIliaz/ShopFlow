@@ -1,0 +1,30 @@
+from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+from rest_framework import serializers
+
+User = get_user_model()
+
+
+class RegisterSerializer(serializers.ModelSerializer):
+    """Validates and creates a new CUSTOMER account."""
+
+    password = serializers.CharField(
+        write_only=True,
+        required=True,
+        validators=[validate_password],
+        style={"input_type": "password"},
+    )
+
+    class Meta:
+        model = User
+        fields = ("id", "username", "email", "phone", "password")
+        # role is intentionally NOT exposed: a registrant can never make
+        # themselves ADMIN. It stays at the model default (CUSTOMER).
+
+    def create(self, validated_data):
+        password = validated_data.pop("password")
+        user = User(**validated_data)
+        user.set_password(password)  # hash, never store the raw password
+        user.role = User.Role.CUSTOMER
+        user.save()
+        return user
