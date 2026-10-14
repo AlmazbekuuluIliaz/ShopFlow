@@ -12,7 +12,6 @@ class CustomUserAdmin(UserAdmin):
     ordering = ("-created_at",)
     readonly_fields = ("created_at", "last_login", "date_joined")
 
-    # Add our custom fields to the default UserAdmin layout.
     fieldsets = UserAdmin.fieldsets + (
         ("Shop profile", {"fields": ("role", "phone", "created_at")}),
     )

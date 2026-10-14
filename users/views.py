@@ -9,8 +9,6 @@ from .serializers import RegisterSerializer
 class RegisterAPIView(APIView):
     """Public sign-up: anyone can create a CUSTOMER account."""
 
-    # Overrides the global IsAuthenticated default: an anonymous visitor
-    # must be able to register before they have any credentials.
     permission_classes = [AllowAny]
 
     def post(self, request):

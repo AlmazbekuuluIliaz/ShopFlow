@@ -38,7 +38,6 @@ class CartAPIView(APIView):
         item = cart.items.filter(product=product).first()
         new_qty = (item.quantity if item else 0) + quantity
 
-        # Stock validation (spec requirement) against the resulting quantity.
         if not product.available:
             return Response(
                 {"detail": "Product is not available."},
@@ -65,8 +64,6 @@ class CartItemAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get_item(self, request, pk):
-        # Scoped to the caller's own cart: an id from someone else's cart
-        # simply yields 404 — the core of per-user data isolation.
         cart = get_user_cart(request.user)
         return get_object_or_404(CartItem, pk=pk, cart=cart)
 

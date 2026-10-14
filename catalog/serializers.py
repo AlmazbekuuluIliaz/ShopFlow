@@ -10,7 +10,6 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    # Mirrors the model's `in_stock` property (available AND stock > 0).
     in_stock = serializers.BooleanField(read_only=True)
 
     class Meta:

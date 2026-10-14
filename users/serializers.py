@@ -18,13 +18,11 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "username", "email", "phone", "password")
-        # role is intentionally NOT exposed: a registrant can never make
-        # themselves ADMIN. It stays at the model default (CUSTOMER).
 
     def create(self, validated_data):
         password = validated_data.pop("password")
         user = User(**validated_data)
-        user.set_password(password)  # hash, never store the raw password
+        user.set_password(password)
         user.role = User.Role.CUSTOMER
         user.save()
         return user

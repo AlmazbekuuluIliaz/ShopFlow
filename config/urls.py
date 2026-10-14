@@ -16,6 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -24,16 +29,18 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    # JWT auth: log in to receive access + refresh, then refresh the access token.
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+
     path('api/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-    # Sign-up (api/auth/register/) and any future user endpoints.
     path('api/auth/', include('users.urls')),
 
-    # Catalog: /api/categories/ and /api/products/ (read open, write admin-only).
     path('api/', include('catalog.urls')),
 
-    # Cart: /api/cart/ and /api/cart/items/<id>/ (each user sees only their own).
     path('api/', include('cart.urls')),
+
+    path('api/', include('orders.urls')),
 ]
