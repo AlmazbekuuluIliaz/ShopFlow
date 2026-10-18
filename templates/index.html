@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}ShopFlow — интернет-магазин{% endblock %}
+
+{% block content %}
+<section class="text-center py-16 sm:py-24">
+    <h1 class="text-4xl sm:text-5xl font-bold tracking-tight">
+        Добро пожаловать в ShopFlow
+    </h1>
+    <p class="mt-4 text-lg text-gray-500 max-w-xl mx-auto">
+        Каталог товаров, корзина и оформление заказов.
+    </p>
+    <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+        <a href="#" class="inline-flex justify-center items-center px-6 py-3 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors">
+            Перейти в каталог
+        </a>
+        <a href="#" class="inline-flex justify-center items-center px-6 py-3 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition-colors">
+            Войти
+        </a>
+    </div>
+</section>
+{% endblock %}

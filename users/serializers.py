@@ -26,3 +26,10 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.role = User.Role.CUSTOMER
         user.save()
         return user
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("id", "username", "email", "phone", "role", "created_at")
+        read_only_fields = fields

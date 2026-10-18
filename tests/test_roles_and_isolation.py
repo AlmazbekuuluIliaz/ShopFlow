@@ -48,7 +48,9 @@ def product(db, category):
 def test_guest_can_read_catalog(api, product):
     r = api.get("/api/products/")
     assert r.status_code == 200
-    assert len(r.json()) == 1
+    body = r.json()
+    assert body["count"] == 1
+    assert len(body["results"]) == 1
 
 
 def test_customer_cannot_create_product(api, customer, category):
@@ -126,11 +128,11 @@ def test_only_admin_changes_status(api, admin, customer, product):
     oid = api.post("/api/orders/", {}, format="json").json()["id"]
 
     # Customer may not change status.
-    assert api.patch(f"/api/orders/{oid}/", {"status": "PAID"}, format="json").status_code == 403
+    assert api.patch(f"/api/orders/{oid}/", {"status": "CONFIRMED"}, format="json").status_code == 403
 
     # Admin sees the order and can change its status.
     api.force_authenticate(admin)
     assert any(o["id"] == oid for o in api.get("/api/orders/").json())
-    r = api.patch(f"/api/orders/{oid}/", {"status": "PAID"}, format="json")
+    r = api.patch(f"/api/orders/{oid}/", {"status": "CONFIRMED"}, format="json")
     assert r.status_code == 200
-    assert r.json()["status"] == "PAID"
+    assert r.json()["status"] == "CONFIRMED"

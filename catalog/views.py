@@ -1,5 +1,8 @@
+from decimal import Decimal, InvalidOperation
+
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -47,13 +50,56 @@ class CategoryDetailAPIView(APIView):
 
 
 class ProductListCreateAPIView(APIView):
-    """GET: list products (anyone). POST: create (admin only)."""
-
     permission_classes = [IsAdminOrReadOnly]
+    serializer_class = ProductSerializer
+
+    ALLOWED_ORDERING = {
+        "price", "-price", "name", "-name", "created_at", "-created_at",
+    }
 
     def get(self, request):
         products = Product.objects.select_related("category").all()
-        return Response(ProductSerializer(products, many=True).data)
+
+        search = request.query_params.get("search")
+        if search:
+            products = products.filter(name__icontains=search)
+
+        category = request.query_params.get("category")
+        if category:
+            if not category.isdigit():
+                return Response(
+                    {"detail": "category must be an integer id."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            products = products.filter(category_id=int(category))
+
+        for param, lookup in (("min_price", "price__gte"), ("max_price", "price__lte")):
+            raw = request.query_params.get(param)
+            if raw is None:
+                continue
+            try:
+                value = Decimal(raw)
+            except (InvalidOperation, TypeError):
+                return Response(
+                    {"detail": f"{param} must be a number."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            products = products.filter(**{lookup: value})
+
+        ordering = request.query_params.get("ordering")
+        if ordering:
+            if ordering not in self.ALLOWED_ORDERING:
+                allowed = ", ".join(sorted(self.ALLOWED_ORDERING))
+                return Response(
+                    {"detail": f"ordering must be one of: {allowed}."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            products = products.order_by(ordering)
+
+        paginator = PageNumberPagination()
+        page = paginator.paginate_queryset(products, request, view=self)
+        serializer = ProductSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
         serializer = ProductSerializer(data=request.data)

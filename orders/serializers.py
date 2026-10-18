@@ -35,8 +35,16 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class OrderStatusSerializer(serializers.ModelSerializer):
-    """Admin-only: change an order's status (validated against Status choices)."""
-
     class Meta:
         model = Order
         fields = ("status",)
+
+    def validate_status(self, value):
+        current = self.instance.status
+        if value == current:
+            return value
+        if not self.instance.can_transition_to(value):
+            raise serializers.ValidationError(
+                f"Cannot change status from {current} to {value}."
+            )
+        return value

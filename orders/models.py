@@ -5,10 +5,20 @@ from django.db import models
 class Order(models.Model):
     class Status(models.TextChoices):
         PENDING = "PENDING", "Pending"
-        PAID = "PAID", "Paid"
+        CONFIRMED = "CONFIRMED", "Confirmed"
+        PROCESSING = "PROCESSING", "Processing"
         SHIPPED = "SHIPPED", "Shipped"
         DELIVERED = "DELIVERED", "Delivered"
         CANCELLED = "CANCELLED", "Cancelled"
+
+    ALLOWED_TRANSITIONS = {
+        Status.PENDING: {Status.CONFIRMED, Status.CANCELLED},
+        Status.CONFIRMED: {Status.PROCESSING, Status.CANCELLED},
+        Status.PROCESSING: {Status.SHIPPED, Status.CANCELLED},
+        Status.SHIPPED: {Status.DELIVERED},
+        Status.DELIVERED: set(),
+        Status.CANCELLED: set(),
+    }
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -28,6 +38,9 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Order #{self.pk} ({self.user})"
+
+    def can_transition_to(self, new_status):
+        return new_status in self.ALLOWED_TRANSITIONS.get(self.status, set())
 
     @property
     def total_price(self):

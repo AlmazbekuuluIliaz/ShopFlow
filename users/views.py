@@ -1,9 +1,9 @@
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import RegisterSerializer
+from .serializers import RegisterSerializer, UserSerializer
 
 
 class RegisterAPIView(APIView):
@@ -19,3 +19,11 @@ class RegisterAPIView(APIView):
             RegisterSerializer(user).data,
             status=status.HTTP_201_CREATED,
         )
+
+
+class MeAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
+
+    def get(self, request):
+        return Response(UserSerializer(request.user).data)

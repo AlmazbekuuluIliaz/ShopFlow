@@ -1,0 +1,88 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% block title %}ShopFlow{% endblock %}</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen flex flex-col bg-gray-50 text-gray-900">
+
+    <header class="sticky top-0 z-50 bg-white border-b border-gray-200">
+        <nav class="max-w-6xl mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <a href="{% url 'home' %}" class="text-xl font-bold tracking-wide">
+                    Shop<span class="text-indigo-600">Flow</span>
+                </a>
+
+                <div class="hidden md:flex items-center gap-6">
+                    <a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors">Каталог</a>
+                    <a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors">Корзина</a>
+                    <a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors">Заказы</a>
+
+                    <a href="#" class="js-guest text-gray-600 hover:text-indigo-600 transition-colors">Войти</a>
+                    <div class="js-user hidden items-center gap-3">
+                        <span class="js-username font-medium">Профиль</span>
+                        <button type="button" class="js-logout text-sm text-gray-500 hover:text-red-600 transition-colors">Выйти</button>
+                    </div>
+                </div>
+
+                <button type="button" id="burgerBtn"
+                        class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:bg-gray-100"
+                        aria-label="Меню" aria-expanded="false" aria-controls="mobileMenu">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div id="mobileMenu" class="hidden md:hidden pb-4">
+                <div class="flex flex-col gap-1">
+                    <a href="#" class="px-2 py-2 rounded-md text-gray-600 hover:bg-gray-100">Каталог</a>
+                    <a href="#" class="px-2 py-2 rounded-md text-gray-600 hover:bg-gray-100">Корзина</a>
+                    <a href="#" class="px-2 py-2 rounded-md text-gray-600 hover:bg-gray-100">Заказы</a>
+
+                    <a href="#" class="js-guest px-2 py-2 rounded-md text-gray-600 hover:bg-gray-100">Войти</a>
+                    <div class="js-user hidden flex-col gap-1">
+                        <span class="js-username px-2 py-2 font-medium">Профиль</span>
+                        <button type="button" class="js-logout text-left px-2 py-2 rounded-md text-gray-500 hover:bg-gray-100">Выйти</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 py-4">
+        <div class="max-w-6xl mx-auto px-4 text-center text-sm text-gray-500">
+            &copy; {% now "Y" %} ShopFlow
+        </div>
+    </footer>
+
+    <script>
+        (function () {
+            var btn = document.getElementById('burgerBtn');
+            var menu = document.getElementById('mobileMenu');
+            if (!btn || !menu) return;
+            btn.addEventListener('click', function () {
+                var open = menu.classList.toggle('hidden') === false;
+                btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            });
+        })();
+    </script>
+
+    <script src="{% static 'js/api.js' %}"></script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
