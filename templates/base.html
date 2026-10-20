@@ -7,7 +7,7 @@
 
     <title>{% block title %}ShopFlow{% endblock %}</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{% static 'js/tailwind.js' %}"></script>
 
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
 
@@ -23,14 +23,14 @@
                 </a>
 
                 <div class="hidden md:flex items-center gap-6">
-                    <a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors">Каталог</a>
-                    <a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors">Корзина</a>
-                    <a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors">Заказы</a>
+                    <a href="{% url 'catalog' %}" class="text-gray-600 hover:text-indigo-600 transition-colors">Каталог</a>
+                    <a href="{% url 'cart' %}" class="text-gray-600 hover:text-indigo-600 transition-colors">Корзина</a>
+                    <a href="{% url 'orders' %}" class="text-gray-600 hover:text-indigo-600 transition-colors">Заказы</a>
 
-                    <a href="#" class="js-guest text-gray-600 hover:text-indigo-600 transition-colors">Войти</a>
-                    <div class="js-user hidden items-center gap-3">
-                        <span class="js-username font-medium">Профиль</span>
-                        <button type="button" class="js-logout text-sm text-gray-500 hover:text-red-600 transition-colors">Выйти</button>
+                    <a href="{% url 'login' %}" class="js-guest text-gray-600 hover:text-indigo-600 transition-colors">Войти</a>
+                    <div class="js-user hidden flex items-center gap-6">
+                        <span class="js-username text-gray-600">Профиль</span>
+                        <button type="button" class="js-logout text-gray-600 hover:text-indigo-600 transition-colors">Выйти</button>
                     </div>
                 </div>
 
@@ -45,14 +45,14 @@
 
             <div id="mobileMenu" class="hidden md:hidden pb-4">
                 <div class="flex flex-col gap-1">
-                    <a href="#" class="px-2 py-2 rounded-md text-gray-600 hover:bg-gray-100">Каталог</a>
-                    <a href="#" class="px-2 py-2 rounded-md text-gray-600 hover:bg-gray-100">Корзина</a>
-                    <a href="#" class="px-2 py-2 rounded-md text-gray-600 hover:bg-gray-100">Заказы</a>
+                    <a href="{% url 'catalog' %}" class="px-2 py-2 rounded-md text-gray-600 hover:bg-gray-100">Каталог</a>
+                    <a href="{% url 'cart' %}" class="px-2 py-2 rounded-md text-gray-600 hover:bg-gray-100">Корзина</a>
+                    <a href="{% url 'orders' %}" class="px-2 py-2 rounded-md text-gray-600 hover:bg-gray-100">Заказы</a>
 
-                    <a href="#" class="js-guest px-2 py-2 rounded-md text-gray-600 hover:bg-gray-100">Войти</a>
-                    <div class="js-user hidden flex-col gap-1">
-                        <span class="js-username px-2 py-2 font-medium">Профиль</span>
-                        <button type="button" class="js-logout text-left px-2 py-2 rounded-md text-gray-500 hover:bg-gray-100">Выйти</button>
+                    <a href="{% url 'login' %}" class="js-guest px-2 py-2 rounded-md text-gray-600 hover:bg-gray-100">Войти</a>
+                    <div class="js-user hidden flex flex-col gap-1">
+                        <span class="js-username px-2 py-2 text-gray-600">Профиль</span>
+                        <button type="button" class="js-logout text-left px-2 py-2 rounded-md text-gray-600 hover:bg-gray-100">Выйти</button>
                     </div>
                 </div>
             </div>
@@ -62,12 +62,6 @@
     <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8">
         {% block content %}{% endblock %}
     </main>
-
-    <footer class="bg-white border-t border-gray-200 py-4">
-        <div class="max-w-6xl mx-auto px-4 text-center text-sm text-gray-500">
-            &copy; {% now "Y" %} ShopFlow
-        </div>
-    </footer>
 
     <script>
         (function () {
@@ -82,6 +76,7 @@
     </script>
 
     <script src="{% static 'js/api.js' %}"></script>
+    <script src="{% static 'js/session.js' %}"></script>
 
     {% block extra_js %}{% endblock %}
 </body>

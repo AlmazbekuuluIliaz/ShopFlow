@@ -11,10 +11,10 @@
         Каталог товаров, корзина и оформление заказов.
     </p>
     <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-        <a href="#" class="inline-flex justify-center items-center px-6 py-3 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors">
+        <a href="{% url 'catalog' %}" class="inline-flex justify-center items-center px-6 py-3 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors">
             Перейти в каталог
         </a>
-        <a href="#" class="inline-flex justify-center items-center px-6 py-3 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition-colors">
+        <a href="{% url 'login' %}" class="js-guest inline-flex justify-center items-center px-6 py-3 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition-colors">
             Войти
         </a>
     </div>

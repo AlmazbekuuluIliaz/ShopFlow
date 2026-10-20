@@ -1,5 +1,12 @@
 const API_BASE = '/api';
 
+const CURRENCY = '$';
+
+function formatPrice(value) {
+    const number = Number(value);
+    return CURRENCY + (isNaN(number) ? value : number.toFixed(2));
+}
+
 const TOKEN_ACCESS = 'shopflow_access';
 const TOKEN_REFRESH = 'shopflow_refresh';
 
@@ -60,9 +67,12 @@ async function apiFetch(path, options = {}, retry = true) {
 
     const res = await fetch(`${API_BASE}${path}`, Object.assign({}, options, { headers }));
 
-    if (res.status === 401 && retry && auth.refresh) {
-        const ok = await refreshAccess();
-        if (ok) return apiFetch(path, options, false);
+    if (res.status === 401 && retry) {
+        if (auth.refresh && await refreshAccess()) {
+            return apiFetch(path, options, false);
+        }
+        auth.clear();
+        return apiFetch(path, options, false);
     }
 
     return res;

@@ -31,6 +31,11 @@ from users.views import MeAPIView
 
 urlpatterns = [
     path('', TemplateView.as_view(template_name='index.html'), name='home'),
+    path('login/', TemplateView.as_view(template_name='login.html'), name='login'),
+    path('catalog/', TemplateView.as_view(template_name='catalog.html'), name='catalog'),
+    path('product/', TemplateView.as_view(template_name='product.html'), name='product'),
+    path('cart/', TemplateView.as_view(template_name='cart.html'), name='cart'),
+    path('orders/', TemplateView.as_view(template_name='orders.html'), name='orders'),
 
     path('admin/', admin.site.urls),
 

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Каталог — ShopFlow{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-6">Каталог</h1>
+
+<form id="filters" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
+    <input id="search" type="search" placeholder="Поиск по названию"
+           class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+    <select id="category"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <option value="">Все категории</option>
+    </select>
+    <select id="ordering"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <option value="">Сортировка: по умолчанию</option>
+        <option value="name">Название (А–Я)</option>
+        <option value="-name">Название (Я–А)</option>
+        <option value="price">Цена (сначала дешевле)</option>
+        <option value="-price">Цена (сначала дороже)</option>
+        <option value="-created_at">Сначала новые</option>
+        <option value="created_at">Сначала старые</option>
+    </select>
+</form>
+
+<div id="status" class="text-gray-500 mb-4"></div>
+
+<div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+
+<div id="pagination" class="hidden flex items-center justify-center gap-4 mt-8">
+    <button id="prevPage" type="button"
+            class="px-4 py-2 rounded-lg border border-gray-300 text-sm hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed">
+        Назад
+    </button>
+    <span id="pageInfo" class="text-sm text-gray-600"></span>
+    <button id="nextPage" type="button"
+            class="px-4 py-2 rounded-lg border border-gray-300 text-sm hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed">
+        Вперёд
+    </button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/catalog.js' %}"></script>
+{% endblock %}

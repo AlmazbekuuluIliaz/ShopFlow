@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Товар — ShopFlow{% endblock %}
+
+{% block content %}
+<div id="status" class="text-gray-500"></div>
+
+<div id="product" class="hidden max-w-2xl">
+    <a href="{% url 'catalog' %}" class="text-sm text-indigo-600 hover:underline">← Назад в каталог</a>
+
+    <p id="pCategory" class="text-sm text-gray-500 mt-4"></p>
+    <h1 id="pName" class="text-2xl font-bold"></h1>
+    <p id="pPrice" class="text-2xl font-semibold mt-2"></p>
+    <p id="pAvail" class="mt-1 text-sm"></p>
+    <p id="pDesc" class="text-gray-600 mt-4 whitespace-pre-line"></p>
+
+    <div id="buyRow" class="flex items-center gap-3 mt-6">
+        <input id="qty" type="number" min="1" value="1"
+               class="w-20 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <button id="addBtn" type="button"
+                class="rounded-lg bg-indigo-600 text-white px-6 py-2.5 font-medium hover:bg-indigo-700 transition-colors">
+            В корзину
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/product.js' %}"></script>
+{% endblock %}
