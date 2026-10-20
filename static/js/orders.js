@@ -29,9 +29,9 @@
 
     function itemRow(it) {
         return `
-        <div class="flex justify-between py-2 text-sm">
-            <span class="text-gray-700">${esc(it.product_name)} × ${it.quantity}</span>
-            <span class="text-gray-900">${esc(formatPrice(it.subtotal))}</span>
+        <div class="flex justify-between gap-2 py-2 text-sm">
+            <span class="text-gray-700 min-w-0 break-words">${esc(it.product_name)} × ${it.quantity}</span>
+            <span class="text-gray-900 shrink-0">${esc(formatPrice(it.subtotal))}</span>
         </div>`;
     }
 

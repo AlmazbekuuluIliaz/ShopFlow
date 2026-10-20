@@ -32,7 +32,6 @@
                 categorySelect.appendChild(opt);
             });
         } catch (e) {
-            // категории не критичны для отображения товаров
         }
     }
 
@@ -40,7 +39,7 @@
         const available = p.in_stock;
         const category = categoryMap[p.category];
         const badge = category
-            ? `<span class="text-xs px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700">${esc(category)}</span>`
+            ? `<span class="text-xs px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 min-w-0 truncate">${esc(category)}</span>`
             : '';
         const addBtn = available
             ? `<button type="button" data-id="${p.id}" class="js-add flex-1 rounded-lg bg-indigo-600 text-white py-2 text-sm hover:bg-indigo-700 transition-colors">В корзину</button>`
@@ -50,8 +49,8 @@
             <h3 class="font-medium">${esc(p.name)}</h3>
             <p class="text-sm text-gray-500 mt-1 line-clamp-2">${esc(p.description)}</p>
             <div class="mt-auto pt-4">
-                <div class="flex items-center justify-between mb-3">
-                    <span class="text-lg font-semibold">${esc(formatPrice(p.price))}</span>
+                <div class="flex items-center justify-between gap-2 mb-3">
+                    <span class="text-lg font-semibold shrink-0">${esc(formatPrice(p.price))}</span>
                     ${badge}
                 </div>
                 <div class="flex gap-2">
