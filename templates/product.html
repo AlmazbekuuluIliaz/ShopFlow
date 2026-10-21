@@ -6,22 +6,36 @@
 {% block content %}
 <div id="status" class="text-gray-500"></div>
 
-<div id="product" class="hidden max-w-2xl">
-    <a href="{% url 'catalog' %}" class="text-sm text-white hover:underline [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">← Назад в каталог</a>
+<div id="product" class="hidden max-w-4xl">
+    <a href="{% url 'catalog' %}" class="inline-flex items-center text-sm text-indigo-600 bg-white border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-100 transition-colors">← Назад в каталог</a>
 
-    <p id="pCategory" class="text-sm text-gray-500 mt-4"></p>
-    <h1 id="pName" class="text-2xl font-bold"></h1>
-    <p id="pPrice" class="text-2xl font-semibold mt-2"></p>
-    <p id="pAvail" class="mt-1 text-sm"></p>
-    <p id="pDesc" class="text-gray-600 mt-4 whitespace-pre-line"></p>
+    <div class="mt-4 flex flex-col sm:flex-row gap-6">
+        <div id="pImageWrap" class="sm:w-64 shrink-0">
+            <div class="aspect-[3/4] rounded-xl overflow-hidden bg-white border border-gray-200">
+                <img id="pImage" alt="" class="w-full h-full object-cover">
+            </div>
+        </div>
 
-    <div id="buyRow" class="flex items-center gap-3 mt-6">
-        <input id="qty" type="number" min="1" value="1"
-               class="w-20 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-        <button id="addBtn" type="button"
-                class="rounded-lg bg-indigo-600 text-white px-6 py-2.5 font-medium hover:bg-indigo-700 transition-colors">
-            В корзину
-        </button>
+        <div class="flex-1 bg-white border border-gray-200 rounded-xl p-6">
+            <p id="pCategory" class="text-sm text-gray-500"></p>
+            <h1 id="pName" class="text-2xl font-bold"></h1>
+            <p id="pPrice" class="text-2xl font-semibold mt-2"></p>
+            <p id="pAvail" class="mt-1 text-sm"></p>
+
+            <div id="pDescBlock" class="mt-4">
+                <h2 class="text-sm font-semibold text-gray-700 mb-1">Описание</h2>
+                <p id="pDesc" class="text-gray-600 whitespace-pre-line"></p>
+            </div>
+
+            <div id="buyRow" class="flex items-center gap-3 mt-6">
+                <input id="qty" type="number" min="1" value="1"
+                       class="w-20 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <button id="addBtn" type="button"
+                        class="rounded-lg bg-indigo-600 text-white px-6 py-2.5 font-medium hover:bg-indigo-700 transition-colors">
+                    В корзину
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

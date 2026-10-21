@@ -2,9 +2,22 @@
     const track = document.getElementById('carousel');
     if (!track) return;
 
+    const categoryMap = {};
+
+    async function loadCategories() {
+        try {
+            const cats = await apiJson('/categories/');
+            cats.forEach(function (c) { categoryMap[c.id] = c.name; });
+        } catch (e) {}
+    }
+
     function cardHtml(p) {
         const img = p.image
             ? `<img src="${esc(p.image)}" alt="" class="w-full h-full object-cover" onerror="this.style.display='none'">`
+            : '';
+        const category = categoryMap[p.category];
+        const badge = category
+            ? `<span class="text-xs px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 min-w-0 truncate">${esc(category)}</span>`
             : '';
         const addBtn = p.in_stock
             ? `<button type="button" data-id="${p.id}" class="js-add w-full rounded-lg bg-indigo-600 text-white py-2 text-sm hover:bg-indigo-700 transition-colors">В корзину</button>`
@@ -13,7 +26,10 @@
         <div class="snap-start shrink-0 w-60 bg-white border border-gray-200 rounded-xl p-3 flex flex-col">
             <a href="/product/?id=${p.id}" class="block aspect-[3/4] rounded-lg overflow-hidden bg-gray-100">${img}</a>
             <a href="/product/?id=${p.id}" class="mt-2 h-10 text-sm font-medium line-clamp-2 hover:underline">${esc(p.name)}</a>
-            <div class="mt-1 mb-2 text-sm font-semibold">${esc(formatPrice(p.price))}</div>
+            <div class="mt-1 mb-2 flex items-center justify-between gap-2">
+                <span class="text-sm font-semibold shrink-0">${esc(formatPrice(p.price))}</span>
+                ${badge}
+            </div>
             <div class="mt-auto">${addBtn}</div>
         </div>`;
     }
@@ -21,7 +37,8 @@
     async function load() {
         try {
             const data = await apiJson('/products/?ordering=-created_at');
-            track.innerHTML = data.results.length ? data.results.map(cardHtml).join('') : '';
+            const items = data.results.slice(0, 6);
+            track.innerHTML = items.length ? items.map(cardHtml).join('') : '';
         } catch (e) {
             track.innerHTML = '';
         }
@@ -45,5 +62,8 @@
         }
     });
 
-    load();
+    (async function init() {
+        await loadCategories();
+        load();
+    })();
 })();

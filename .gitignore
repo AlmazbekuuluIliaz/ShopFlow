@@ -28,6 +28,6 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# Static / media (collected)
+# Static
 /staticfiles/
 /media/

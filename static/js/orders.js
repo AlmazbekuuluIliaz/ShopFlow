@@ -16,7 +16,7 @@
 
     function statusBadge(status) {
         const s = STATUS[status] || { label: status, cls: 'bg-gray-100 text-gray-700' };
-        return `<span class="text-xs px-2.5 py-1 rounded-full ${s.cls}">${esc(s.label)}</span>`;
+        return `<span class="shrink-0 whitespace-nowrap text-xs px-2.5 py-1 rounded-full ${s.cls}">${esc(s.label)}</span>`;
     }
 
     function formatDate(iso) {
@@ -38,8 +38,8 @@
     function orderCard(o) {
         return `
         <div class="bg-white border border-gray-200 rounded-xl p-5">
-            <div class="flex items-center justify-between gap-3 flex-wrap">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0 truncate">
                     <span class="font-semibold">Заказ #${o.id}</span>
                     <span class="text-sm text-gray-500 ml-2">${esc(formatDate(o.created_at))}</span>
                 </div>

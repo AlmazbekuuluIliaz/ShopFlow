@@ -44,11 +44,15 @@
         const addBtn = available
             ? `<button type="button" data-id="${p.id}" class="js-add flex-1 rounded-lg bg-indigo-600 text-white py-2 text-sm hover:bg-indigo-700 transition-colors">В корзину</button>`
             : `<button type="button" disabled class="flex-1 rounded-lg bg-gray-200 text-gray-400 py-2 text-sm cursor-not-allowed">В корзину</button>`;
+        const img = p.image
+            ? `<img src="${esc(p.image)}" alt="" class="w-full h-full object-cover" onerror="this.style.display='none'">`
+            : '';
         return `
         <div class="bg-white border border-gray-200 rounded-xl p-4 flex flex-col">
-            <h3 class="font-medium">${esc(p.name)}</h3>
+            <a href="/product/?id=${p.id}" class="block aspect-[3/4] rounded-lg overflow-hidden bg-gray-100 mb-3">${img}</a>
+            <a href="/product/?id=${p.id}" class="font-medium hover:underline line-clamp-2">${esc(p.name)}</a>
             <p class="text-sm text-gray-500 mt-1 line-clamp-2">${esc(p.description)}</p>
-            <div class="mt-auto pt-4">
+            <div class="mt-auto pt-3">
                 <div class="flex items-center justify-between gap-2 mb-3">
                     <span class="text-lg font-semibold shrink-0">${esc(formatPrice(p.price))}</span>
                     ${badge}

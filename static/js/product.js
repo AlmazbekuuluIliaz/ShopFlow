@@ -18,10 +18,19 @@
     }
 
     function render(p, catName) {
+        const imgEl = document.getElementById('pImage');
+        const imgWrap = document.getElementById('pImageWrap');
+        if (p.image) {
+            imgEl.src = p.image;
+            imgEl.onerror = function () { imgWrap.style.display = 'none'; };
+        } else {
+            imgWrap.style.display = 'none';
+        }
+
         document.getElementById('pCategory').textContent = catName;
         document.getElementById('pName').textContent = p.name;
         document.getElementById('pPrice').textContent = formatPrice(p.price);
-        document.getElementById('pDesc').textContent = p.description;
+        document.getElementById('pDesc').textContent = (p.description || '').trim();
 
         const avail = document.getElementById('pAvail');
         if (p.in_stock) {
