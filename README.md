@@ -111,5 +111,7 @@ Swagger UI с интерактивным тестированием: http://127.
 ## Тесты
 
 ```bash
-pytest
+pytest -v
+<img width="1543" height="722" alt="изображение" src="https://github.com/user-attachments/assets/3607ff6f-bf89-4691-b5ea-f7cd5261c41f" />
+
 ```
