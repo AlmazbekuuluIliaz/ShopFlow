@@ -18,8 +18,6 @@
    venv\Scripts\activate
    ```
 
-   На Linux/macOS активация: `source venv/bin/activate`
-
 2. Установить зависимости:
 
    ```bash
