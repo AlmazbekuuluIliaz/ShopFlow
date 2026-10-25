@@ -10,20 +10,23 @@
     const checkoutBtn = document.getElementById('checkout');
 
     function itemRow(it) {
+        const atMax = it.quantity >= it.stock;
         return `
-        <div data-id="${it.id}" class="bg-white border border-gray-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+        <div data-id="${it.id}" data-stock="${it.stock}" class="bg-white border border-gray-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+            <a href="/product/?id=${it.product}" class="block w-12 h-16 shrink-0 rounded-lg overflow-hidden bg-gray-100">${it.image ? `<img src="${esc(it.image)}" alt="${esc(it.product_name)}" loading="lazy" class="w-full h-full object-cover" onerror="this.style.display='none'">` : ''}</a>
             <div class="flex-1 min-w-0">
                 <a href="/product/?id=${it.product}" class="font-medium hover:underline">${esc(it.product_name)}</a>
                 <div class="text-sm text-gray-500">${esc(formatPrice(it.price))} за шт.</div>
             </div>
             <div class="flex items-center gap-2">
                 <button type="button" class="js-dec w-9 h-9 rounded-lg border border-gray-300 text-lg leading-none hover:bg-gray-100">−</button>
-                <input type="number" min="1" value="${it.quantity}" aria-label="Количество"
+                <input type="number" min="1" max="${it.stock}" value="${it.quantity}" aria-label="Количество"
                        class="js-qty w-14 h-9 text-center rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <button type="button" class="js-inc w-9 h-9 rounded-lg border border-gray-300 text-lg leading-none hover:bg-gray-100">+</button>
+                <button type="button" class="js-inc w-9 h-9 rounded-lg border border-gray-300 text-lg leading-none hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"${atMax ? ' disabled' : ''}>+</button>
+                <span class="text-xs text-gray-400 whitespace-nowrap ml-1">в наличии: ${it.stock} шт.</span>
             </div>
             <div class="sm:w-28 sm:text-right font-semibold">${esc(formatPrice(it.subtotal))}</div>
-            <button type="button" class="js-remove text-gray-400 hover:text-red-600 self-end sm:self-auto" title="Удалить">✕</button>
+            <button type="button" class="js-remove w-9 h-9 rounded-lg border border-gray-300 flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-gray-100 self-end sm:self-auto" title="Удалить">✕</button>
         </div>`;
     }
 
@@ -60,7 +63,6 @@
             });
             render(cart);
         } catch (err) {
-            toast((err.data && err.data.detail) || 'Не удалось изменить количество.', 'error');
             loadCart();
         }
     }
@@ -78,9 +80,11 @@
         const row = e.target.closest('[data-id]');
         if (!row) return;
         const id = Number(row.dataset.id);
+        const stock = Number(row.dataset.stock);
         const input = row.querySelector('.js-qty');
         if (e.target.closest('.js-inc')) {
-            updateQty(id, parseInt(input.value, 10) + 1);
+            const next = parseInt(input.value, 10) + 1;
+            if (next <= stock) updateQty(id, next);
         } else if (e.target.closest('.js-dec')) {
             updateQty(id, parseInt(input.value, 10) - 1);
         } else if (e.target.closest('.js-remove')) {
@@ -92,7 +96,9 @@
         if (!e.target.classList.contains('js-qty')) return;
         const row = e.target.closest('[data-id]');
         const id = Number(row.dataset.id);
-        const quantity = Math.max(1, parseInt(e.target.value, 10) || 1);
+        const stock = Number(row.dataset.stock);
+        let quantity = Math.max(1, parseInt(e.target.value, 10) || 1);
+        if (quantity > stock) quantity = stock;
         updateQty(id, quantity);
     });
 

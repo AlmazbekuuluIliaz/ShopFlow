@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -23,10 +24,12 @@ class CartAPIView(APIView):
 
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(operation_id="cart_retrieve", responses=CartSerializer)
     def get(self, request):
         cart = get_user_cart(request.user)
         return Response(CartSerializer(cart).data)
 
+    @extend_schema(operation_id="cart_add_item", request=AddCartItemSerializer, responses=CartSerializer)
     def post(self, request):
         """Add a product to the cart, or increase its quantity if present."""
         serializer = AddCartItemSerializer(data=request.data)
@@ -67,6 +70,7 @@ class CartItemAPIView(APIView):
         cart = get_user_cart(request.user)
         return get_object_or_404(CartItem, pk=pk, cart=cart)
 
+    @extend_schema(operation_id="cart_item_update", request=AddCartItemSerializer, responses=CartSerializer)
     def patch(self, request, pk):
         item = self.get_item(request, pk)
         try:
@@ -90,6 +94,7 @@ class CartItemAPIView(APIView):
         item.save()
         return Response(CartSerializer(item.cart).data)
 
+    @extend_schema(operation_id="cart_item_remove", responses=CartSerializer)
     def delete(self, request, pk):
         item = self.get_item(request, pk)
         cart = item.cart

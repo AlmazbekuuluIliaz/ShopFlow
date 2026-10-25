@@ -24,12 +24,9 @@ from drf_spectacular.views import (
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
+from rest_framework_simplejwt.views import TokenBlacklistView, TokenRefreshView
 
-from users.views import MeAPIView
+from users.views import LoginView, MeAPIView
 
 urlpatterns = [
     path('', TemplateView.as_view(template_name='index.html'), name='home'),
@@ -38,6 +35,7 @@ urlpatterns = [
     path('product/', TemplateView.as_view(template_name='product.html'), name='product'),
     path('cart/', TemplateView.as_view(template_name='cart.html'), name='cart'),
     path('orders/', TemplateView.as_view(template_name='orders.html'), name='orders'),
+    path('manage/', TemplateView.as_view(template_name='manage.html'), name='manage'),
 
     path('admin/', admin.site.urls),
 
@@ -45,8 +43,9 @@ urlpatterns = [
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 
-    path('api/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/auth/token/', LoginView.as_view(), name='token_obtain_pair'),
     path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/auth/logout/', TokenBlacklistView.as_view(), name='token_blacklist'),
 
     path('api/auth/', include('users.urls')),
 

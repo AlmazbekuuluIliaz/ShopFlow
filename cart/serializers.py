@@ -10,7 +10,9 @@ class CartItemSerializer(serializers.ModelSerializer):
 
     product_name = serializers.ReadOnlyField(source="product.name")
     price = serializers.ReadOnlyField(source="product.price")
-    subtotal = serializers.ReadOnlyField()
+    image = serializers.ImageField(source="product.image", read_only=True)
+    stock = serializers.ReadOnlyField(source="product.stock")
+    subtotal = serializers.FloatField(read_only=True)
 
     class Meta:
         model = CartItem
@@ -18,6 +20,8 @@ class CartItemSerializer(serializers.ModelSerializer):
             "id",
             "product",
             "product_name",
+            "image",
+            "stock",
             "price",
             "quantity",
             "subtotal",
@@ -30,8 +34,8 @@ class CartSerializer(serializers.ModelSerializer):
     """The whole cart: its lines plus computed totals."""
 
     items = CartItemSerializer(many=True, read_only=True)
-    total_price = serializers.ReadOnlyField()
-    total_quantity = serializers.ReadOnlyField()
+    total_price = serializers.FloatField(read_only=True)
+    total_quantity = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Cart

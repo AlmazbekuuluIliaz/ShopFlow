@@ -21,7 +21,7 @@
             : '';
         const addBtn = p.in_stock
             ? `<button type="button" data-id="${p.id}" class="js-add w-full rounded-lg bg-indigo-600 text-white py-2 text-sm hover:bg-indigo-700 transition-colors">В корзину</button>`
-            : `<button type="button" disabled class="w-full rounded-lg bg-gray-200 text-gray-400 py-2 text-sm cursor-not-allowed">В корзину</button>`;
+            : `<button type="button" disabled class="w-full rounded-lg bg-gray-200 text-gray-500 py-2 text-sm cursor-not-allowed">Нет в наличии</button>`;
         return `
         <div class="snap-start shrink-0 w-60 bg-white border border-gray-200 rounded-xl p-3 flex flex-col">
             <a href="/product/?id=${p.id}" class="block aspect-[3/4] rounded-lg overflow-hidden bg-gray-100">${img}</a>

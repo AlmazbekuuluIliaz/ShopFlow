@@ -9,14 +9,14 @@
 <div id="status" class="text-gray-500"></div>
 
 <div id="empty" class="hidden text-center py-16">
-    <p class="text-white mb-4 [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">Корзина пуста</p>
-    <a href="{% url 'catalog' %}" class="inline-flex px-6 py-3 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors">
+    <p class="text-white mb-4 [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">Ваша корзина пуста</p>
+    <a href="{% url 'catalog' %}" class="inline-flex px-6 py-3 rounded-lg bg-white text-indigo-600 font-bold shadow-sm hover:bg-gray-200 transition-colors">
         Перейти в каталог
     </a>
 </div>
 
-<div id="cart" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div id="items" class="lg:col-span-2 space-y-3"></div>
+<div id="cart" class="hidden grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <div id="items" class="lg:col-span-3 space-y-3"></div>
 
     <aside class="bg-white border border-gray-200 rounded-xl p-5 h-fit">
         <h2 class="font-semibold mb-4">Итого</h2>

@@ -1,5 +1,7 @@
 from django.conf import settings
-from django.db import models
+from django.db import models, transaction
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 
 
 class Order(models.Model):
@@ -42,6 +44,22 @@ class Order(models.Model):
     def can_transition_to(self, new_status):
         return new_status in self.ALLOWED_TRANSITIONS.get(self.status, set())
 
+    def cancel(self):
+        from rest_framework.exceptions import ValidationError
+
+        from catalog.models import Product
+
+        if not self.can_transition_to(self.Status.CANCELLED):
+            raise ValidationError(f"Cannot cancel an order in status {self.status}.")
+
+        with transaction.atomic():
+            for item in self.items.select_related("product"):
+                product = Product.objects.select_for_update().get(pk=item.product_id)
+                product.stock += item.quantity
+                product.save(update_fields=["stock"])
+            self.status = self.Status.CANCELLED
+            self.save(update_fields=["status", "updated_at"])
+
     @property
     def total_price(self):
         return sum((item.subtotal for item in self.items.all()), 0)
@@ -70,3 +88,14 @@ class OrderItem(models.Model):
     @property
     def subtotal(self):
         return self.price * self.quantity
+
+
+@receiver(pre_delete, sender=Order)
+def restore_stock_on_order_delete(sender, instance, **kwargs):
+    if instance.status == Order.Status.CANCELLED:
+        return
+    from catalog.models import Product
+    for item in instance.items.all():
+        Product.objects.filter(pk=item.product_id).update(
+            stock=models.F("stock") + item.quantity
+        )

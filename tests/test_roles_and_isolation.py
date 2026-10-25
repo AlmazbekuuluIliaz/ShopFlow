@@ -67,10 +67,20 @@ def test_admin_can_create_product(api, admin, category):
     api.force_authenticate(admin)
     r = api.post(
         "/api/products/",
-        {"category": category.id, "name": "X", "slug": "x", "price": "1.00", "stock": 1},
+        {"category": category.id, "product_type": "BOOK", "name": "X", "slug": "x", "price": "1.00", "stock": 1},
         format="json",
     )
     assert r.status_code == 201
+
+
+def test_product_type_is_required(api, admin, category):
+    api.force_authenticate(admin)
+    r = api.post(
+        "/api/products/",
+        {"category": category.id, "name": "Y", "slug": "y", "price": "1.00", "stock": 1},
+        format="json",
+    )
+    assert r.status_code == 400
 
 
 # --- Cart: isolation + stock ----------------------------------------------

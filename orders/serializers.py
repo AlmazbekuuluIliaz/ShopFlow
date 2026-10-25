@@ -5,7 +5,7 @@ from .models import Order, OrderItem
 
 class OrderItemSerializer(serializers.ModelSerializer):
     product_name = serializers.ReadOnlyField(source="product.name")
-    subtotal = serializers.ReadOnlyField()
+    subtotal = serializers.FloatField(read_only=True)
 
     class Meta:
         model = OrderItem
@@ -16,7 +16,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
-    total_price = serializers.ReadOnlyField()
+    total_price = serializers.FloatField(read_only=True)
     username = serializers.ReadOnlyField(source="user.username")
 
     class Meta:

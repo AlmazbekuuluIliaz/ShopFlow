@@ -69,3 +69,44 @@ def test_pagination_shape(api, products):
     body = r.json()
     assert set(body) >= {"count", "next", "previous", "results"}
     assert body["count"] == 3
+
+
+def test_product_detail_has_category_object_and_specs(api, books):
+    p = Product.objects.create(
+        category=books, name="Django Book", slug="dj", price="30.00", stock=5,
+        product_type="BOOK", author="A. Author", publisher="O'Reilly",
+        language="Русский", publication_year=2024, pages=350, isbn="978-5",
+    )
+    r = api.get(f"/api/products/{p.id}/")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["category_detail"]["name"] == "Books"
+    labels = [s["label"] for s in body["specs"]]
+    assert "Тип" in labels and "Автор" in labels and "ISBN" in labels
+    assert "related" in body
+
+
+def test_product_detail_related_same_category_only(api, books, toys):
+    p1 = Product.objects.create(category=books, name="B1", slug="b1", price="10.00", stock=1)
+    p2 = Product.objects.create(category=books, name="B2", slug="b2", price="10.00", stock=1)
+    p3 = Product.objects.create(category=toys, name="T1", slug="t1", price="10.00", stock=1)
+    r = api.get(f"/api/products/{p1.id}/")
+    related_ids = [x["id"] for x in r.json()["related"]]
+    assert p2.id in related_ids
+    assert p3.id not in related_ids
+    assert p1.id not in related_ids
+
+
+def test_product_detail_has_format_age_and_gallery(api, books):
+    from catalog.models import ProductImage
+    p = Product.objects.create(
+        category=books, name="Book", slug="bk", price="10.00", stock=1,
+        media_format="AUDIO", age_rating="12+",
+    )
+    ProductImage.objects.create(product=p, image="products/x.jpg", alt="back", position=1)
+    r = api.get(f"/api/products/{p.id}/")
+    body = r.json()
+    assert len(body["images"]) == 1
+    labels = {s["label"]: s["value"] for s in body["specs"]}
+    assert labels.get("Формат") == "Аудиокнига"
+    assert labels.get("Возраст") == "12+"

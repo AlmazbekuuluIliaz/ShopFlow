@@ -26,14 +26,17 @@ function toast(message, type = 'success') {
 function renderGuest() {
     document.querySelectorAll('.js-guest').forEach(show);
     document.querySelectorAll('.js-user').forEach(hide);
+    document.querySelectorAll('.js-admin').forEach(hide);
 }
 
-function renderUser(username) {
+function renderUser(me) {
     document.querySelectorAll('.js-guest').forEach(hide);
     document.querySelectorAll('.js-user').forEach(show);
     document.querySelectorAll('.js-username').forEach(function (el) {
-        el.textContent = username;
+        el.textContent = me.username;
     });
+    const isAdmin = me.role === 'ADMIN';
+    document.querySelectorAll('.js-admin').forEach(isAdmin ? show : hide);
 }
 
 async function updateNav() {
@@ -43,7 +46,7 @@ async function updateNav() {
     }
     try {
         const me = await apiJson('/users/me/');
-        renderUser(me.username);
+        renderUser(me);
     } catch (e) {
         auth.clear();
         renderGuest();

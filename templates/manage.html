@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% load static assets %}
+
+{% block title %}Управление — ShopFlow{% endblock %}
+
+{% block content %}
+<h1 class="text-[28px] font-bold mb-6 text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">Управление</h1>
+
+<div id="denied" class="hidden bg-white border border-gray-200 rounded-xl p-8 text-center">
+    <p class="text-gray-700">Доступ только для администратора.</p>
+</div>
+
+<div id="panel" class="hidden space-y-8">
+
+    <section class="bg-white border border-gray-200 rounded-xl p-5">
+        <h2 class="text-xl font-semibold mb-4">Категории</h2>
+
+        <form id="catForm" class="flex flex-wrap items-end gap-3 mb-5">
+            <input type="hidden" id="cId">
+            <div class="flex-1 min-w-[160px]">
+                <label class="block text-xs text-gray-500 mb-1">Название</label>
+                <input id="cName" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
+            </div>
+            <div class="flex-1 min-w-[160px]">
+                <label class="block text-xs text-gray-500 mb-1">Slug</label>
+                <input id="cSlug" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" id="cSubmit" class="rounded-lg bg-indigo-600 text-white px-4 py-2 hover:bg-indigo-700 transition-colors">Добавить</button>
+                <button type="button" id="cCancel" class="hidden rounded-lg border border-gray-300 px-4 py-2 hover:bg-gray-50">Отмена</button>
+            </div>
+        </form>
+
+        <div id="catStatus" class="text-sm text-gray-500 mb-2"></div>
+        <div id="catList" class="divide-y divide-gray-100"></div>
+    </section>
+
+    <section class="bg-white border border-gray-200 rounded-xl p-5">
+        <h2 class="text-xl font-semibold mb-4">Товары</h2>
+
+        <form id="prodForm" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+            <input type="hidden" id="pId">
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Категория</label>
+                <select id="pCategory" required class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white"></select>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Тип</label>
+                <select id="pType" required class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white">
+                    <option value="" disabled selected>— выберите тип —</option>
+                    <option value="BOOK">Книга</option>
+                    <option value="MAGAZINE">Журнал</option>
+                    <option value="NEWSPAPER">Газета</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Название</label>
+                <input id="pName" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Slug</label>
+                <input id="pSlug" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Цена</label>
+                <input id="pPrice" type="number" step="0.01" min="0" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Остаток</label>
+                <input id="pStock" type="number" min="0" value="0" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+            </div>
+            <div class="flex items-center gap-2 pt-6">
+                <input id="pAvailable" type="checkbox" checked class="w-4 h-4">
+                <label for="pAvailable" class="text-sm text-gray-700">Доступен к продаже</label>
+            </div>
+
+            <div class="sm:col-span-2 border-t border-gray-100 pt-3 mt-1">
+                <span class="text-sm font-medium text-gray-700">Характеристики</span>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Издательство</label>
+                <input id="pPublisher" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Язык</label>
+                <input id="pLanguage" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Формат</label>
+                <select id="pMediaFormat" class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white">
+                    <option value="PRINT">Бумажная</option>
+                    <option value="EBOOK">Электронная</option>
+                    <option value="AUDIO">Аудиокнига</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Возрастной рейтинг</label>
+                <select id="pAgeRating" class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white">
+                    <option value="">—</option>
+                    <option value="0+">0+</option>
+                    <option value="6+">6+</option>
+                    <option value="12+">12+</option>
+                    <option value="16+">16+</option>
+                    <option value="18+">18+</option>
+                </select>
+            </div>
+
+            <div id="bookFields" class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="sm:col-span-2">
+                    <span class="text-xs font-medium text-indigo-700">Для публики</span>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Автор</label>
+                    <input id="pAuthor" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Год издания</label>
+                    <input id="pYear" type="number" min="0" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Страниц</label>
+                    <input id="pPages" type="number" min="0" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Переплёт</label>
+                    <select id="pCoverType" class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white">
+                        <option value="">—</option>
+                        <option value="HARD">Твёрдый</option>
+                        <option value="SOFT">Мягкий</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">ISBN</label>
+                    <input id="pIsbn" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                </div>
+            </div>
+
+            <div id="periodicalFields" class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="sm:col-span-2">
+                    <span class="text-xs font-medium text-indigo-700">Для периодики</span>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">ISSN</label>
+                    <input id="pIssn" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Номер выпуска</label>
+                    <input id="pIssueNumber" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Дата выпуска</label>
+                    <input id="pIssueDate" type="date" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                </div>
+            </div>
+
+            <div class="sm:col-span-2">
+                <label class="block text-xs text-gray-500 mb-1">Описание</label>
+                <textarea id="pDescription" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2"></textarea>
+            </div>
+            <div class="sm:col-span-2">
+                <label class="block text-xs text-gray-500 mb-1">Изображение</label>
+                <input id="pImage" type="file" accept="image/*" class="w-full text-sm">
+                <p id="pImageHint" class="hidden text-xs text-gray-400 mt-1">Оставьте пустым, чтобы не менять текущее изображение.</p>
+            </div>
+            <div class="sm:col-span-2 flex gap-2">
+                <button type="submit" id="pSubmit" class="rounded-lg bg-indigo-600 text-white px-4 py-2 hover:bg-indigo-700 transition-colors">Добавить товар</button>
+                <button type="button" id="pCancel" class="hidden rounded-lg border border-gray-300 px-4 py-2 hover:bg-gray-50">Отмена</button>
+            </div>
+        </form>
+
+        <div id="prodStatus" class="text-sm text-gray-500 mb-2"></div>
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
+            <span id="prodCount" class="text-sm text-gray-500"></span>
+            <div class="flex items-center gap-2">
+                <label for="prodSort" class="text-sm text-gray-500">Сортировка</label>
+                <select id="prodSort" class="text-sm border border-gray-300 rounded-lg px-2 py-1 bg-white">
+                    <option value="created_desc">Сначала новые</option>
+                    <option value="created_asc">Сначала старые</option>
+                    <option value="name_asc">Название А→Я</option>
+                    <option value="name_desc">Название Я→А</option>
+                    <option value="price_asc">Цена ↑</option>
+                    <option value="price_desc">Цена ↓</option>
+                    <option value="stock_asc">Остаток ↑</option>
+                    <option value="stock_desc">Остаток ↓</option>
+                    <option value="type">По типу</option>
+                </select>
+            </div>
+        </div>
+        <div id="prodList" class="divide-y divide-gray-100"></div>
+    </section>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static_v 'js/manage.js' %}"></script>
+{% endblock %}

@@ -1,5 +1,6 @@
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
@@ -17,6 +18,7 @@ from .serializers import OrderSerializer, OrderStatusSerializer
 class OrderListCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(operation_id="orders_list", responses=OrderSerializer(many=True))
     def get(self, request):
         # Isolation: a customer sees only their own orders; an admin sees all.
         if is_admin(request.user):
@@ -26,6 +28,7 @@ class OrderListCreateAPIView(APIView):
         orders = orders.prefetch_related("items")
         return Response(OrderSerializer(orders, many=True).data)
 
+    @extend_schema(operation_id="orders_create", request=None, responses=OrderSerializer)
     def post(self, request):
         """Place an order from the current user's cart."""
         return self._checkout(request)
@@ -77,10 +80,12 @@ class OrderDetailAPIView(APIView):
         self.check_object_permissions(request, order)
         return order
 
+    @extend_schema(operation_id="orders_retrieve", responses=OrderSerializer)
     def get(self, request, pk):
         order = self.get_order(request, pk)
         return Response(OrderSerializer(order).data)
 
+    @extend_schema(operation_id="orders_update_status", request=OrderStatusSerializer, responses=OrderSerializer)
     def patch(self, request, pk):
         order = self.get_order(request, pk)
         # Owners can view their order, but only an admin may change its status.
@@ -91,5 +96,34 @@ class OrderDetailAPIView(APIView):
             )
         serializer = OrderStatusSerializer(order, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        new_status = serializer.validated_data.get("status")
+        if new_status == Order.Status.CANCELLED and order.status != Order.Status.CANCELLED:
+            order.cancel()
+        else:
+            serializer.save()
+        return Response(OrderSerializer(order).data)
+
+    @extend_schema(operation_id="orders_delete", responses={204: None})
+    def delete(self, request, pk):
+        order = self.get_order(request, pk)
+        if not is_admin(request.user):
+            return Response(
+                {"detail": "Only an admin can delete orders."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        order.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class OrderCancelAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
+
+    @extend_schema(operation_id="orders_cancel", request=None, responses=OrderSerializer)
+    def post(self, request, pk):
+        queryset = Order.objects.prefetch_related("items")
+        if not is_admin(request.user):
+            queryset = queryset.filter(user=request.user)
+        order = get_object_or_404(queryset, pk=pk)
+        self.check_object_permissions(request, order)
+        order.cancel()
         return Response(OrderSerializer(order).data)

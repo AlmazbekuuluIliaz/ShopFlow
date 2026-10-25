@@ -58,6 +58,15 @@
         </div>`;
     }
 
+    function cancelButton(o) {
+        if (!(ALLOWED_TRANSITIONS[o.status] || []).includes('CANCELLED')) return '';
+        return `<button type="button" data-cancel-id="${o.id}" class="js-cancel shrink-0 text-xs px-3 py-1 rounded-lg border border-red-300 text-red-600 hover:bg-red-50">Отменить</button>`;
+    }
+
+    function deleteButton(o) {
+        return `<button type="button" data-delete-id="${o.id}" class="js-delete shrink-0 text-xs px-3 py-1 rounded-lg border border-red-300 text-red-600 hover:bg-red-50">Удалить</button>`;
+    }
+
     function formatDate(iso) {
         const d = new Date(iso);
         return isNaN(d) ? '' : d.toLocaleString('ru-RU', {
@@ -74,16 +83,18 @@
         </div>`;
     }
 
-    function orderCard(o) {
+    function orderCard(o, no) {
         const customer = isAdmin
-            ? `<span class="text-sm text-gray-500 ml-2">· ${esc(o.username)}</span>`
+            ? `<span class="text-sm text-gray-500 ml-2">${esc(o.username)}</span>`
             : '';
-        const right = isAdmin ? statusControl(o) : statusBadge(o.status);
+        const right = isAdmin
+            ? `<div class="flex items-center gap-2 shrink-0">${statusControl(o)}${deleteButton(o)}</div>`
+            : `<div class="flex items-center gap-2 shrink-0">${statusBadge(o.status)}${cancelButton(o)}</div>`;
         return `
         <div class="bg-white border border-gray-200 rounded-xl p-5">
             <div class="flex items-center justify-between gap-3">
                 <div class="min-w-0 truncate">
-                    <span class="font-semibold">Заказ #${o.id}</span>
+                    <span class="font-semibold">Заказ #${no}</span>
                     <span class="text-sm text-gray-500 ml-2">${esc(formatDate(o.created_at))}</span>
                     ${customer}
                 </div>
@@ -110,7 +121,10 @@
                 emptyBox.classList.remove('hidden');
                 return;
             }
-            ordersBox.innerHTML = orders.map(orderCard).join('');
+            const total = orders.length;
+            ordersBox.innerHTML = orders.map(function (o, i) {
+                return orderCard(o, isAdmin ? o.id : total - i);
+            }).join('');
         } catch (e) {
             statusBox.textContent = 'Не удалось загрузить заказы.';
         }
@@ -142,6 +156,44 @@
     ordersBox.addEventListener('change', function (e) {
         const select = e.target.closest('.js-status-select');
         if (select) changeStatus(select);
+    });
+
+    async function cancelOrder(btn) {
+        const id = btn.getAttribute('data-cancel-id');
+        if (!confirm('Отменить заказ #' + id + '?')) return;
+        btn.disabled = true;
+        try {
+            await apiJson(`/orders/${id}/cancel/`, { method: 'POST', body: JSON.stringify({}) });
+            toast('Заказ отменён');
+            await loadOrders();
+        } catch (err) {
+            toast((err.data && err.data.detail) || 'Не удалось отменить заказ.', 'error');
+            btn.disabled = false;
+        }
+    }
+
+    async function deleteOrder(btn) {
+        const id = btn.getAttribute('data-delete-id');
+        if (!confirm('Удалить заказ #' + id + ' безвозвратно? Остаток на складе не изменится.')) return;
+        btn.disabled = true;
+        try {
+            await apiJson(`/orders/${id}/`, { method: 'DELETE' });
+            toast('Заказ удалён');
+            await loadOrders();
+        } catch (err) {
+            toast((err.data && err.data.detail) || 'Не удалось удалить заказ.', 'error');
+            btn.disabled = false;
+        }
+    }
+
+    ordersBox.addEventListener('click', function (e) {
+        const cancelBtn = e.target.closest('.js-cancel');
+        if (cancelBtn) {
+            cancelOrder(cancelBtn);
+            return;
+        }
+        const deleteBtn = e.target.closest('.js-delete');
+        if (deleteBtn) deleteOrder(deleteBtn);
     });
 
     async function init() {
