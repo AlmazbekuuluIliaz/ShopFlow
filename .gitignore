@@ -30,4 +30,4 @@ Thumbs.db
 
 # Static
 /staticfiles/
-/media/
+data.json
