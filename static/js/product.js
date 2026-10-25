@@ -22,6 +22,7 @@
         const imgWrap = document.getElementById('pImageWrap');
         if (p.image) {
             imgEl.src = p.image;
+            imgEl.alt = p.name;
             imgEl.onerror = function () { imgWrap.style.display = 'none'; };
         } else {
             imgWrap.style.display = 'none';

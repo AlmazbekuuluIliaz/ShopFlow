@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static assets %}
 
 {% block title %}Корзина — ShopFlow{% endblock %}
 
@@ -37,5 +37,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/cart.js' %}"></script>
+<script src="{% static_v 'js/cart.js' %}"></script>
 {% endblock %}

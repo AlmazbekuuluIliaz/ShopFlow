@@ -45,7 +45,7 @@
             ? `<button type="button" data-id="${p.id}" class="js-add flex-1 rounded-lg bg-indigo-600 text-white py-2 text-sm hover:bg-indigo-700 transition-colors">В корзину</button>`
             : `<button type="button" disabled class="flex-1 rounded-lg bg-gray-200 text-gray-400 py-2 text-sm cursor-not-allowed">В корзину</button>`;
         const img = p.image
-            ? `<img src="${esc(p.image)}" alt="" class="w-full h-full object-cover" onerror="this.style.display='none'">`
+            ? `<img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy" class="w-full h-full object-cover" onerror="this.style.display='none'">`
             : '';
         return `
         <div class="bg-white border border-gray-200 rounded-xl p-4 flex flex-col">

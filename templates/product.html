@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static assets %}
 
 {% block title %}Товар — ShopFlow{% endblock %}
 
@@ -12,7 +12,7 @@
     <div class="mt-4 flex flex-col sm:flex-row gap-6">
         <div id="pImageWrap" class="sm:w-64 shrink-0">
             <div class="aspect-[3/4] rounded-xl overflow-hidden bg-white border border-gray-200">
-                <img id="pImage" alt="" class="w-full h-full object-cover">
+                <img id="pImage" alt="" loading="lazy" class="w-full h-full object-cover">
             </div>
         </div>
 
@@ -28,7 +28,7 @@
             </div>
 
             <div id="buyRow" class="flex items-center gap-3 mt-6">
-                <input id="qty" type="number" min="1" value="1"
+                <input id="qty" type="number" min="1" value="1" aria-label="Количество"
                        class="w-20 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 <button id="addBtn" type="button"
                         class="rounded-lg bg-indigo-600 text-white px-6 py-2.5 font-medium hover:bg-indigo-700 transition-colors">
@@ -41,5 +41,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/product.js' %}"></script>
+<script src="{% static_v 'js/product.js' %}"></script>
 {% endblock %}

@@ -1,4 +1,4 @@
-{% load static %}
+{% load static assets %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -7,13 +7,13 @@
 
     <title>{% block title %}ShopFlow{% endblock %}</title>
 
-    <script src="{% static 'js/tailwind.js' %}"></script>
+    <script src="{% static_v 'js/tailwind.js' %}"></script>
 
-    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <link href="{% static_v 'css/style.css' %}" rel="stylesheet">
 
     {% block extra_head %}{% endblock %}
 </head>
-<body class="min-h-screen flex flex-col text-gray-900" style="background: url('{% static 'img/background.png' %}') center / cover no-repeat fixed;">
+<body class="min-h-screen flex flex-col text-gray-900" style="background: url('{% static_v 'img/background.png' %}') center / cover no-repeat fixed;">
 
     <header class="sticky top-0 z-50 bg-white border-b border-gray-200">
         <nav class="max-w-6xl mx-auto px-4">
@@ -75,8 +75,8 @@
         })();
     </script>
 
-    <script src="{% static 'js/api.js' %}"></script>
-    <script src="{% static 'js/session.js' %}"></script>
+    <script src="{% static_v 'js/api.js' %}"></script>
+    <script src="{% static_v 'js/session.js' %}"></script>
 
     {% block extra_js %}{% endblock %}
 </body>

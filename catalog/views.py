@@ -97,6 +97,7 @@ class ProductListCreateAPIView(APIView):
             products = products.order_by(ordering)
 
         paginator = PageNumberPagination()
+        paginator.page_size = 12
         page = paginator.paginate_queryset(products, request, view=self)
         serializer = ProductSerializer(page, many=True)
         return paginator.get_paginated_response(serializer.data)

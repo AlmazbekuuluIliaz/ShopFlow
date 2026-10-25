@@ -17,12 +17,14 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     total_price = serializers.ReadOnlyField()
+    username = serializers.ReadOnlyField(source="user.username")
 
     class Meta:
         model = Order
         fields = (
             "id",
             "user",
+            "username",
             "status",
             "items",
             "total_price",

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static assets %}
 
 {% block title %}Мои заказы — ShopFlow{% endblock %}
 
@@ -19,5 +19,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/orders.js' %}"></script>
+<script src="{% static_v 'js/orders.js' %}"></script>
 {% endblock %}

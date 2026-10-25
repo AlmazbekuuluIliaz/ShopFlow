@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static assets %}
 
 {% block title %}Каталог — ShopFlow{% endblock %}
 
@@ -31,17 +31,17 @@
 
 <div id="pagination" class="hidden flex items-center justify-center gap-4 mt-8">
     <button id="prevPage" type="button"
-            class="px-4 py-2 rounded-lg border border-gray-300 text-sm hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed">
+            class="px-4 py-2 rounded-lg border border-gray-300 bg-white text-sm hover:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed">
         Назад
     </button>
-    <span id="pageInfo" class="text-sm text-gray-600"></span>
+    <span id="pageInfo" class="text-sm font-semibold text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]"></span>
     <button id="nextPage" type="button"
-            class="px-4 py-2 rounded-lg border border-gray-300 text-sm hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed">
+            class="px-4 py-2 rounded-lg border border-gray-300 bg-white text-sm hover:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed">
         Вперёд
     </button>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/catalog.js' %}"></script>
+<script src="{% static_v 'js/catalog.js' %}"></script>
 {% endblock %}

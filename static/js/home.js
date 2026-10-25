@@ -13,7 +13,7 @@
 
     function cardHtml(p) {
         const img = p.image
-            ? `<img src="${esc(p.image)}" alt="" class="w-full h-full object-cover" onerror="this.style.display='none'">`
+            ? `<img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy" class="w-full h-full object-cover" onerror="this.style.display='none'">`
             : '';
         const category = categoryMap[p.category];
         const badge = category

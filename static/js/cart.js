@@ -18,7 +18,7 @@
             </div>
             <div class="flex items-center gap-2">
                 <button type="button" class="js-dec w-9 h-9 rounded-lg border border-gray-300 text-lg leading-none hover:bg-gray-100">−</button>
-                <input type="number" min="1" value="${it.quantity}"
+                <input type="number" min="1" value="${it.quantity}" aria-label="Количество"
                        class="js-qty w-14 h-9 text-center rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 <button type="button" class="js-inc w-9 h-9 rounded-lg border border-gray-300 text-lg leading-none hover:bg-gray-100">+</button>
             </div>
