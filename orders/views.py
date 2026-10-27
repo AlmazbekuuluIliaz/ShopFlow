@@ -38,7 +38,7 @@ class OrderListCreateAPIView(APIView):
         cart = Cart.objects.filter(user=request.user).first()
         items = list(cart.items.select_related("product")) if cart else []
         if not items:
-            raise ValidationError("Your cart is empty.")
+            raise ValidationError("Ваша корзина пуста.")
 
         order = Order.objects.create(user=request.user)
         for item in items:
@@ -47,7 +47,7 @@ class OrderListCreateAPIView(APIView):
             if item.quantity > product.stock:
                 # Raising here rolls back the whole transaction — no partial order.
                 raise ValidationError(
-                    f"Not enough stock for '{product.name}': {product.stock} left."
+                    f"Недостаточно товара «{product.name}»: в наличии {product.stock} шт."
                 )
             OrderItem.objects.create(
                 order=order,
@@ -91,7 +91,7 @@ class OrderDetailAPIView(APIView):
         # Owners can view their order, but only an admin may change its status.
         if not is_admin(request.user):
             return Response(
-                {"detail": "Only an admin can change the order status."},
+                {"detail": "Менять статус заказа может только администратор."},
                 status=status.HTTP_403_FORBIDDEN,
             )
         serializer = OrderStatusSerializer(order, data=request.data, partial=True)
@@ -108,7 +108,7 @@ class OrderDetailAPIView(APIView):
         order = self.get_order(request, pk)
         if not is_admin(request.user):
             return Response(
-                {"detail": "Only an admin can delete orders."},
+                {"detail": "Удалять заказы может только администратор."},
                 status=status.HTTP_403_FORBIDDEN,
             )
         order.delete()

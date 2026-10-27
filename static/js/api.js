@@ -50,7 +50,7 @@ async function refreshAccess() {
     }
 
     const data = await res.json();
-    auth.save(data.access, null);
+    auth.save(data.access, data.refresh ?? null);
     return true;
 }
 

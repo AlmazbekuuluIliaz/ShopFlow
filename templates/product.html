@@ -10,34 +10,37 @@
     <a href="{% url 'catalog' %}" class="inline-flex items-center text-sm text-indigo-600 bg-white border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-100 transition-colors">← Назад в каталог</a>
 
     <div class="mt-4 flex flex-col sm:flex-row gap-6">
-        <div id="pImageWrap" class="sm:w-64 shrink-0">
+        <div id="pImageWrap" class="w-40 sm:w-64 shrink-0 mx-auto sm:mx-0">
             <div class="aspect-[3/4] rounded-xl overflow-hidden bg-white border border-gray-200">
                 <img id="pImage" alt="" loading="lazy" class="w-full h-full object-cover">
             </div>
             <div id="pThumbs" class="mt-2 grid grid-cols-4 gap-2"></div>
         </div>
 
-        <div class="flex-1 bg-white border border-gray-200 rounded-xl p-6">
-            <p id="pCategory" class="text-sm text-gray-500"></p>
-            <h1 id="pName" class="text-2xl font-bold"></h1>
-            <p id="pPrice" class="text-2xl font-semibold mt-2"></p>
-            <p id="pAvail" class="mt-1 text-sm"></p>
+        <div class="flex-1 bg-white border border-gray-200 rounded-2xl p-6 sm:p-8">
+            <p id="pCategory" class="text-xs font-semibold uppercase tracking-wide text-indigo-600"></p>
+            <h1 id="pName" class="text-2xl sm:text-3xl font-bold mt-1 leading-tight"></h1>
 
-            <div id="pSpecsBlock" class="mt-4 hidden">
+            <div class="flex flex-wrap items-center gap-3 mt-4">
+                <span id="pPrice" class="text-3xl font-bold"></span>
+                <span id="pAvail" class="text-xs font-medium px-2.5 py-1 rounded-full"></span>
+            </div>
+
+            <div id="pSpecsBlock" class="mt-6 hidden">
                 <h2 class="text-sm font-semibold text-gray-700 mb-2">Характеристики</h2>
-                <dl id="pSpecs" class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-sm"></dl>
+                <dl id="pSpecs" class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1 text-sm"></dl>
             </div>
 
-            <div id="pDescBlock" class="mt-4">
+            <div id="pDescBlock" class="mt-6">
                 <h2 class="text-sm font-semibold text-gray-700 mb-1">Описание</h2>
-                <p id="pDesc" class="text-gray-600 whitespace-pre-line"></p>
+                <p id="pDesc" class="text-gray-600 leading-relaxed whitespace-pre-line"></p>
             </div>
 
-            <div id="buyRow" class="flex items-center gap-3 mt-6">
+            <div id="buyRow" class="flex items-center gap-3 mt-8">
                 <input id="qty" type="number" min="1" value="1" aria-label="Количество"
-                       class="w-20 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                       class="w-20 rounded-lg border border-gray-300 px-3 py-2.5 text-center focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 <button id="addBtn" type="button"
-                        class="rounded-lg bg-indigo-600 text-white px-6 py-2.5 font-medium hover:bg-indigo-700 transition-colors">
+                        class="flex-1 sm:flex-none rounded-lg bg-indigo-600 text-white px-8 py-2.5 font-semibold hover:bg-indigo-700 transition-colors">
                     В корзину
                 </button>
             </div>

@@ -53,7 +53,37 @@ async function updateNav() {
     }
 }
 
-function logout() {
+async function updateCartBadge(cart) {
+    const badge = document.getElementById('cartBadge');
+    if (!badge) return;
+    if (!auth.isAuthenticated) {
+        badge.classList.add('hidden');
+        return;
+    }
+    try {
+        if (!cart) cart = await apiJson('/cart/');
+        const n = cart.total_quantity || 0;
+        if (n > 0) {
+            badge.textContent = n > 99 ? '99+' : n;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    } catch (e) {
+        badge.classList.add('hidden');
+    }
+}
+
+async function logout() {
+    const refresh = auth.refresh;
+    if (refresh) {
+        try {
+            await apiFetch('/auth/logout/', {
+                method: 'POST',
+                body: JSON.stringify({ refresh }),
+            }, false);
+        } catch (e) {}
+    }
     auth.clear();
     window.location.href = '/';
 }
@@ -74,4 +104,5 @@ document.addEventListener('DOMContentLoaded', function () {
         btn.addEventListener('click', logout);
     });
     updateNav();
+    updateCartBadge();
 });

@@ -5,16 +5,21 @@
     const ordersBox = document.getElementById('orders');
     const emptyBox = document.getElementById('empty');
     const titleEl = document.querySelector('h1');
+    const adminFilters = document.getElementById('adminFilters');
+    const fSearch = document.getElementById('fSearch');
+    const fStatus = document.getElementById('fStatus');
+    const fCount = document.getElementById('fCount');
 
     let isAdmin = false;
+    let allOrders = [];
 
     const STATUS = {
-        PENDING: { label: 'Ожидает', cls: 'bg-yellow-100 text-yellow-800' },
-        CONFIRMED: { label: 'Подтверждён', cls: 'bg-blue-100 text-blue-800' },
-        PROCESSING: { label: 'В обработке', cls: 'bg-indigo-100 text-indigo-800' },
-        SHIPPED: { label: 'Отправлен', cls: 'bg-purple-100 text-purple-800' },
+        PENDING: { label: 'Ожидает', cls: 'bg-indigo-50 text-indigo-700' },
+        CONFIRMED: { label: 'Подтверждён', cls: 'bg-indigo-100 text-indigo-700' },
+        PROCESSING: { label: 'В обработке', cls: 'bg-indigo-200 text-indigo-800' },
+        SHIPPED: { label: 'Отправлен', cls: 'bg-indigo-300 text-indigo-900' },
         DELIVERED: { label: 'Доставлен', cls: 'bg-green-100 text-green-800' },
-        CANCELLED: { label: 'Отменён', cls: 'bg-red-100 text-red-700' },
+        CANCELLED: { label: 'Отменён', cls: 'bg-gray-100 text-gray-600' },
     };
 
     const ALLOWED_TRANSITIONS = {
@@ -88,12 +93,12 @@
             ? `<span class="text-sm text-gray-500 ml-2">${esc(o.username)}</span>`
             : '';
         const right = isAdmin
-            ? `<div class="flex items-center gap-2 shrink-0">${statusControl(o)}${deleteButton(o)}</div>`
-            : `<div class="flex items-center gap-2 shrink-0">${statusBadge(o.status)}${cancelButton(o)}</div>`;
+            ? `<div class="flex flex-wrap items-center gap-2">${statusControl(o)}${deleteButton(o)}</div>`
+            : `<div class="flex flex-wrap items-center gap-2 shrink-0">${statusBadge(o.status)}${cancelButton(o)}</div>`;
         return `
         <div class="bg-white border border-gray-200 rounded-xl p-5">
-            <div class="flex items-center justify-between gap-3">
-                <div class="min-w-0 truncate">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="min-w-0">
                     <span class="font-semibold">Заказ #${no}</span>
                     <span class="text-sm text-gray-500 ml-2">${esc(formatDate(o.created_at))}</span>
                     ${customer}
@@ -110,21 +115,46 @@
         </div>`;
     }
 
+    function render() {
+        if (!allOrders.length) {
+            ordersBox.innerHTML = '';
+            if (fCount) fCount.textContent = '';
+            emptyBox.classList.remove('hidden');
+            return;
+        }
+        emptyBox.classList.add('hidden');
+
+        let list = allOrders;
+        if (isAdmin) {
+            const q = fSearch.value.trim().toLowerCase();
+            const st = fStatus.value;
+            list = allOrders.filter(function (o) {
+                if (st && o.status !== st) return false;
+                if (q && !(o.username || '').toLowerCase().includes(q)) return false;
+                return true;
+            });
+            fCount.textContent = `Показано: ${list.length} из ${allOrders.length}`;
+        }
+
+        if (!list.length) {
+            ordersBox.innerHTML = '<p class="text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">Ничего не найдено.</p>';
+            return;
+        }
+
+        const total = allOrders.length;
+        ordersBox.innerHTML = list.map(function (o) {
+            const no = isAdmin ? o.id : total - allOrders.indexOf(o);
+            return orderCard(o, no);
+        }).join('');
+    }
+
     async function loadOrders() {
         statusBox.textContent = 'Загрузка…';
         emptyBox.classList.add('hidden');
         try {
-            const orders = await apiJson('/orders/');
+            allOrders = await apiJson('/orders/');
             statusBox.textContent = '';
-            if (!orders.length) {
-                ordersBox.innerHTML = '';
-                emptyBox.classList.remove('hidden');
-                return;
-            }
-            const total = orders.length;
-            ordersBox.innerHTML = orders.map(function (o, i) {
-                return orderCard(o, isAdmin ? o.id : total - i);
-            }).join('');
+            render();
         } catch (e) {
             statusBox.textContent = 'Не удалось загрузить заказы.';
         }
@@ -203,12 +233,15 @@
         } catch (e) {
             isAdmin = false;
         }
-        if (isAdmin && titleEl) {
-            titleEl.textContent = 'Все заказы';
-        }
-        if (isAdmin && emptyBox) {
-            const p = emptyBox.querySelector('p');
-            if (p) p.textContent = 'Заказов пока нет.';
+        if (isAdmin) {
+            if (titleEl) titleEl.textContent = 'Все заказы';
+            if (emptyBox) {
+                const p = emptyBox.querySelector('p');
+                if (p) p.textContent = 'Заказов пока нет.';
+            }
+            adminFilters.classList.remove('hidden');
+            fSearch.addEventListener('input', render);
+            fStatus.addEventListener('change', render);
         }
         await loadOrders();
     }

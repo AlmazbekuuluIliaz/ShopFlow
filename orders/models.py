@@ -50,7 +50,7 @@ class Order(models.Model):
         from catalog.models import Product
 
         if not self.can_transition_to(self.Status.CANCELLED):
-            raise ValidationError(f"Cannot cancel an order in status {self.status}.")
+            raise ValidationError(f"Нельзя отменить заказ в статусе «{self.status}».")
 
         with transaction.atomic():
             for item in self.items.select_related("product"):

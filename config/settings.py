@@ -15,6 +15,7 @@ from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -209,6 +210,11 @@ SPECTACULAR_SETTINGS = {
 }
 
 if not DEBUG:
+    if SECRET_KEY == "django-insecure-dev-only-change-me":
+        raise ImproperlyConfigured(
+            "SECRET_KEY must be set via environment when DEBUG is off."
+        )
+
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True

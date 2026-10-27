@@ -46,6 +46,29 @@
     const bookFields = document.getElementById('bookFields');
     const periodicalFields = document.getElementById('periodicalFields');
 
+    const galleryBlock = document.getElementById('galleryBlock');
+    const galleryList = document.getElementById('galleryList');
+    const galleryFile = document.getElementById('galleryFile');
+    let currentImages = [];
+
+    const dProducts = document.getElementById('dProducts');
+    const dCategories = document.getElementById('dCategories');
+    const dOrders = document.getElementById('dOrders');
+    const dRevenue = document.getElementById('dRevenue');
+    const dStatuses = document.getElementById('dStatuses');
+    const dLowStock = document.getElementById('dLowStock');
+    const lowStockLabel = document.getElementById('lowStockLabel');
+
+    const STATUS = {
+        PENDING: { label: 'Ожидает', dot: 'bg-indigo-300' },
+        CONFIRMED: { label: 'Подтверждён', dot: 'bg-indigo-400' },
+        PROCESSING: { label: 'В обработке', dot: 'bg-indigo-500' },
+        SHIPPED: { label: 'Отправлен', dot: 'bg-indigo-600' },
+        DELIVERED: { label: 'Доставлен', dot: 'bg-green-500' },
+        CANCELLED: { label: 'Отменён', dot: 'bg-gray-400' },
+    };
+    const LOW_STOCK_THRESHOLD = 3;
+
     const categoryMap = {};
     const productMap = {};
     let productsCache = [];
@@ -118,13 +141,15 @@
             : '<span class="text-xs text-gray-400">скрыт</span>';
         const name = esc(p.name);
         return `
-        <div class="flex items-center gap-3 py-3">
-            ${img}
-            <div class="min-w-0 flex-1">
-                <div class="font-medium truncate">${name}</div>
-                <div class="text-sm text-gray-500">${esc(type)} · ${esc(cat)} · ${esc(formatPrice(p.price))} · остаток ${esc(p.stock)} · ${avail}</div>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 py-3">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+                ${img}
+                <div class="min-w-0 flex-1">
+                    <div class="font-medium truncate">${name}</div>
+                    <div class="text-sm text-gray-500">${esc(type)} · ${esc(cat)} · ${esc(formatPrice(p.price))} · остаток ${esc(p.stock)} · ${avail}</div>
+                </div>
             </div>
-            <div class="flex gap-2 shrink-0">
+            <div class="flex gap-2 shrink-0 self-end sm:self-auto">
                 <button type="button" data-edit-prod="${p.id}" class="text-sm text-indigo-600 hover:underline">Изменить</button>
                 <button type="button" data-del-prod="${p.id}" class="text-sm text-red-600 hover:underline">Удалить</button>
             </div>
@@ -198,6 +223,72 @@
         }
     }
 
+    const LOW_STOCK_SHOW = 6;
+    let lowStockExpanded = false;
+
+    function renderLowStock() {
+        const low = productsCache
+            .filter(function (p) { return Number(p.stock) <= LOW_STOCK_THRESHOLD; })
+            .sort(function (a, b) { return Number(a.stock) - Number(b.stock); });
+
+        lowStockLabel.textContent = `Остатки товаров (≤ ${LOW_STOCK_THRESHOLD})` + (low.length ? `: ${low.length}` : '');
+
+        if (!low.length) {
+            dLowStock.innerHTML = '<span class="text-gray-400">Все товары в достатке.</span>';
+            return;
+        }
+
+        const shown = lowStockExpanded ? low : low.slice(0, LOW_STOCK_SHOW);
+        const rest = low.length - shown.length;
+        const tags = shown.map(function (p) {
+            const n = Number(p.stock);
+            const numCls = n === 0 ? 'text-red-600 font-medium' : 'text-gray-400';
+            return `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-gray-50 border border-gray-100">${esc(p.name)} <span class="${numCls}">${esc(p.stock)}</span></span>`;
+        });
+        if (rest > 0) {
+            tags.push(`<button type="button" class="js-lowstock-toggle inline-flex items-center px-2 py-0.5 text-gray-400 hover:underline">…ещё ${rest}</button>`);
+        } else if (lowStockExpanded && low.length > LOW_STOCK_SHOW) {
+            tags.push(`<button type="button" class="js-lowstock-toggle inline-flex items-center px-2 py-0.5 text-gray-400 hover:underline">свернуть</button>`);
+        }
+        dLowStock.innerHTML = tags.join('');
+    }
+
+    dLowStock.addEventListener('click', function (e) {
+        if (!e.target.closest('.js-lowstock-toggle')) return;
+        lowStockExpanded = !lowStockExpanded;
+        renderLowStock();
+    });
+
+    async function refreshDashboard() {
+        dProducts.textContent = productsCache.length;
+        dCategories.textContent = Object.keys(categoryMap).length;
+        renderLowStock();
+        try {
+            const orders = await apiJson('/orders/');
+            dOrders.textContent = orders.length;
+            let revenue = 0;
+            const counts = {};
+            orders.forEach(function (o) {
+                counts[o.status] = (counts[o.status] || 0) + 1;
+                if (o.status !== 'CANCELLED') revenue += Number(o.total_price) || 0;
+            });
+            dRevenue.textContent = formatPrice(revenue);
+            const order = ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
+            const chips = order.filter(function (s) { return counts[s]; }).map(function (s) {
+                const meta = STATUS[s] || { label: s, dot: 'bg-gray-400' };
+                return `<span class="inline-flex items-center gap-1.5 text-gray-600">
+                    <span class="w-2 h-2 rounded-full ${meta.dot}"></span>
+                    ${esc(meta.label)} <span class="font-semibold text-gray-900">${counts[s]}</span>
+                </span>`;
+            });
+            dStatuses.innerHTML = chips.length ? chips.join('') : '<span class="text-gray-400">Заказов пока нет.</span>';
+        } catch (e) {
+            dOrders.textContent = '—';
+            dRevenue.textContent = '—';
+            dStatuses.innerHTML = '<span class="text-gray-400">Не удалось загрузить заказы.</span>';
+        }
+    }
+
     function resetCatForm() {
         cId.value = '';
         catForm.reset();
@@ -229,6 +320,7 @@
             resetCatForm();
             await loadCategories();
             await loadProducts();
+            await refreshDashboard();
         } catch (err) {
             toast(errText(err, 'Не удалось сохранить категорию.'), 'error');
         }
@@ -258,6 +350,7 @@
                 toast('Категория удалена');
                 await loadCategories();
                 await loadProducts();
+                await refreshDashboard();
             } catch (err) {
                 toast(errText(err, 'Не удалось удалить категорию.'), 'error');
             }
@@ -284,6 +377,68 @@
         if (!periodicalVisible) clearGroup(periodicalFields);
     }
 
+    function renderGalleryManage() {
+        if (!currentImages.length) {
+            galleryList.innerHTML = '<span class="text-xs text-gray-400">Пока нет дополнительных фото.</span>';
+            return;
+        }
+        galleryList.innerHTML = currentImages.map(function (im) {
+            return `
+            <div class="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200">
+                <img src="${esc(im.image)}" alt="${esc(im.alt || '')}" class="w-full h-full object-cover">
+                <button type="button" data-del-img="${im.id}" class="absolute top-0 right-0 bg-red-600 text-white text-xs w-5 h-5 leading-5 text-center rounded-bl hover:bg-red-700">×</button>
+            </div>`;
+        }).join('');
+    }
+
+    galleryFile.addEventListener('change', async function () {
+        const id = pId.value;
+        const files = Array.from(galleryFile.files || []);
+        if (!id || !files.length) return;
+        files.sort(function (a, b) {
+            return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+        });
+        galleryFile.disabled = true;
+        let added = 0;
+        try {
+            for (const file of files) {
+                const fd = new FormData();
+                fd.append('image', file);
+                try {
+                    const created = await apiJson(`/products/${id}/images/`, { method: 'POST', body: fd });
+                    currentImages.push(created);
+                    added += 1;
+                } catch (err) {
+                    toast(errText(err, `Не удалось добавить «${file.name}».`), 'error');
+                }
+            }
+            galleryFile.value = '';
+            renderGalleryManage();
+            if (added) {
+                toast(added === 1 ? 'Фото добавлено' : `Добавлено фото: ${added}`);
+                await loadProducts();
+            }
+        } finally {
+            galleryFile.disabled = false;
+        }
+    });
+
+    galleryList.addEventListener('click', async function (e) {
+        const btn = e.target.closest('[data-del-img]');
+        if (!btn) return;
+        const imgId = btn.getAttribute('data-del-img');
+        if (!confirm('Удалить это фото?')) return;
+        try {
+            await apiJson(`/product-images/${imgId}/`, { method: 'DELETE' });
+            currentImages = currentImages.filter(function (im) { return String(im.id) !== String(imgId); });
+            renderGalleryManage();
+            toast('Фото удалено');
+            await loadProducts();
+        } catch (err) {
+            toast(errText(err, 'Не удалось удалить фото.'), 'error');
+        }
+    });
+
     function resetProdForm() {
         pId.value = '';
         prodForm.reset();
@@ -291,6 +446,8 @@
         pSubmit.textContent = 'Добавить товар';
         pCancel.classList.add('hidden');
         pImageHint.classList.add('hidden');
+        currentImages = [];
+        galleryBlock.classList.add('hidden');
         updateTypeFields();
     }
 
@@ -320,6 +477,9 @@
         pSubmit.textContent = 'Сохранить';
         pCancel.classList.remove('hidden');
         pImageHint.classList.remove('hidden');
+        currentImages = (p.images || []).slice();
+        galleryBlock.classList.remove('hidden');
+        renderGalleryManage();
         updateTypeFields();
         prodForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -360,6 +520,7 @@
             }
             resetProdForm();
             await loadProducts();
+            await refreshDashboard();
         } catch (err) {
             toast(errText(err, 'Не удалось сохранить товар.'), 'error');
         }
@@ -384,6 +545,7 @@
                 await apiJson(`/products/${id}/`, { method: 'DELETE' });
                 toast('Товар удалён');
                 await loadProducts();
+                await refreshDashboard();
             } catch (err) {
                 toast(errText(err, 'Не удалось удалить товар.'), 'error');
             }
@@ -412,6 +574,7 @@
         panel.classList.remove('hidden');
         await loadCategories();
         await loadProducts();
+        await refreshDashboard();
     }
 
     init();

@@ -47,6 +47,6 @@ class OrderStatusSerializer(serializers.ModelSerializer):
             return value
         if not self.instance.can_transition_to(value):
             raise serializers.ValidationError(
-                f"Cannot change status from {current} to {value}."
+                f"Нельзя изменить статус с «{current}» на «{value}»."
             )
         return value

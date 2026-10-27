@@ -6,6 +6,26 @@
 {% block content %}
 <h1 class="text-[28px] font-bold mb-6 text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">Мои заказы</h1>
 
+<div id="adminFilters" class="hidden bg-white border border-gray-200 rounded-xl p-4 mb-4 flex flex-col sm:flex-row sm:flex-wrap sm:items-end gap-3">
+    <div class="sm:flex-1 sm:min-w-[180px]">
+        <label class="block text-xs text-gray-500 mb-1">Поиск по покупателю</label>
+        <input id="fSearch" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+    </div>
+    <div>
+        <label class="block text-xs text-gray-500 mb-1">Статус</label>
+        <select id="fStatus" class="w-full sm:w-auto border border-gray-300 rounded-lg px-3 py-2 bg-white">
+            <option value="">Все</option>
+            <option value="PENDING">Ожидает</option>
+            <option value="CONFIRMED">Подтверждён</option>
+            <option value="PROCESSING">В обработке</option>
+            <option value="SHIPPED">Отправлен</option>
+            <option value="DELIVERED">Доставлен</option>
+            <option value="CANCELLED">Отменён</option>
+        </select>
+    </div>
+    <div id="fCount" class="text-sm text-gray-500 sm:ml-auto sm:py-2"></div>
+</div>
+
 <div id="status" class="text-gray-500"></div>
 
 <div id="empty" class="hidden text-center py-16">

@@ -54,16 +54,16 @@
 
         if (gallery.length < 2) return;
         thumbs.innerHTML = gallery.map(function (g, i) {
-            return `<button type="button" data-src="${esc(g.src)}" class="js-thumb aspect-square rounded-lg overflow-hidden bg-gray-100 border ${i === 0 ? 'border-indigo-500' : 'border-gray-200'}"><img src="${esc(g.src)}" alt="${esc(g.alt)}" loading="lazy" class="w-full h-full object-cover"></button>`;
+            return `<button type="button" data-src="${esc(g.src)}" class="js-thumb aspect-[3/4] rounded-lg overflow-hidden bg-gray-100 border-2 ${i === 0 ? 'border-indigo-500' : 'border-transparent'} hover:border-indigo-300 transition-colors"><img src="${esc(g.src)}" alt="${esc(g.alt)}" loading="lazy" class="w-full h-full object-cover"></button>`;
         }).join('');
         thumbs.addEventListener('click', function (e) {
             const btn = e.target.closest('.js-thumb');
             if (!btn) return;
             imgEl.src = btn.dataset.src;
             thumbs.querySelectorAll('.js-thumb').forEach(function (b) {
-                b.className = b.className.replace('border-indigo-500', 'border-gray-200');
+                b.className = b.className.replace('border-indigo-500', 'border-transparent');
             });
-            btn.className = btn.className.replace('border-gray-200', 'border-indigo-500');
+            btn.className = btn.className.replace('border-transparent', 'border-indigo-500');
         });
     }
 
@@ -80,14 +80,14 @@
         const avail = document.getElementById('pAvail');
         if (p.in_stock) {
             avail.textContent = 'В наличии: ' + p.stock + ' шт.';
-            avail.className = 'mt-1 text-sm text-green-700';
+            avail.className = 'text-xs font-medium px-2.5 py-1 rounded-full bg-green-100 text-green-700';
             qtyInput.max = p.stock;
         } else {
             avail.textContent = 'Нет в наличии';
-            avail.className = 'mt-1 text-sm text-gray-500';
+            avail.className = 'text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-500';
             qtyInput.disabled = true;
             addBtn.disabled = true;
-            addBtn.className = 'rounded-lg bg-gray-200 text-gray-400 px-6 py-2.5 font-medium cursor-not-allowed';
+            addBtn.className = 'flex-1 sm:flex-none rounded-lg bg-gray-200 text-gray-400 px-8 py-2.5 font-semibold cursor-not-allowed';
         }
 
         card.classList.remove('hidden');
@@ -119,6 +119,7 @@
                 body: JSON.stringify({ product: Number(productId), quantity }),
             });
             toast('Добавлено в корзину');
+            updateCartBadge();
         } catch (err) {
             toast((err.data && err.data.detail) || 'Не удалось добавить товар.', 'error');
         } finally {

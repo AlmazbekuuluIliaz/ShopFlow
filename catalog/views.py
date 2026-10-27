@@ -7,9 +7,14 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Category, Product
+from .models import Category, Product, ProductImage
 from .permissions import IsAdminOrReadOnly
-from .serializers import CategorySerializer, ProductSerializer, ProductShortSerializer
+from .serializers import (
+    CategorySerializer,
+    ProductImageSerializer,
+    ProductSerializer,
+    ProductShortSerializer,
+)
 
 
 def _is_admin(user):
@@ -94,7 +99,7 @@ class ProductListCreateAPIView(APIView):
         if category:
             if not category.isdigit():
                 return Response(
-                    {"detail": "category must be an integer id."},
+                    {"detail": "category должен быть числовым id."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             products = products.filter(category_id=int(category))
@@ -107,7 +112,7 @@ class ProductListCreateAPIView(APIView):
                 value = Decimal(raw)
             except (InvalidOperation, TypeError):
                 return Response(
-                    {"detail": f"{param} must be a number."},
+                    {"detail": f"{param} должен быть числом."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             products = products.filter(**{lookup: value})
@@ -117,7 +122,7 @@ class ProductListCreateAPIView(APIView):
             if ordering not in self.ALLOWED_ORDERING:
                 allowed = ", ".join(sorted(self.ALLOWED_ORDERING))
                 return Response(
-                    {"detail": f"ordering must be one of: {allowed}."},
+                    {"detail": f"ordering должен быть одним из: {allowed}."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             products = products.order_by(ordering)
@@ -169,4 +174,32 @@ class ProductDetailAPIView(APIView):
     def delete(self, request, pk):
         product = get_object_or_404(Product, pk=pk)
         product.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ProductImageListCreateAPIView(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+
+    @extend_schema(operation_id="product_images_list", responses=ProductImageSerializer(many=True))
+    def get(self, request, pk):
+        product = get_object_or_404(Product, pk=pk)
+        images = product.images.all()
+        return Response(ProductImageSerializer(images, many=True).data)
+
+    @extend_schema(operation_id="product_images_create", request=ProductImageSerializer, responses=ProductImageSerializer)
+    def post(self, request, pk):
+        product = get_object_or_404(Product, pk=pk)
+        serializer = ProductImageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(product=product)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class ProductImageDetailAPIView(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+
+    @extend_schema(operation_id="product_images_destroy", responses={204: None})
+    def delete(self, request, pk):
+        image = get_object_or_404(ProductImage, pk=pk)
+        image.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

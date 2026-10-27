@@ -131,6 +131,7 @@
                 body: JSON.stringify({ product: Number(btn.dataset.id), quantity: 1 }),
             });
             toast('Добавлено в корзину');
+            updateCartBadge();
         } catch (err) {
             toast((err.data && err.data.detail) || 'Не удалось добавить товар.', 'error');
         } finally {

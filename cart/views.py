@@ -43,12 +43,12 @@ class CartAPIView(APIView):
 
         if not product.available:
             return Response(
-                {"detail": "Product is not available."},
+                {"detail": "Товар недоступен."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         if new_qty > product.stock:
             return Response(
-                {"detail": f"Only {product.stock} left in stock."},
+                {"detail": f"В наличии только {product.stock} шт."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -77,17 +77,17 @@ class CartItemAPIView(APIView):
             quantity = int(request.data.get("quantity"))
         except (TypeError, ValueError):
             return Response(
-                {"detail": "quantity must be an integer."},
+                {"detail": "Количество должно быть целым числом."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         if quantity < 1:
             return Response(
-                {"detail": "quantity must be >= 1."},
+                {"detail": "Количество должно быть не меньше 1."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         if quantity > item.product.stock:
             return Response(
-                {"detail": f"Only {item.product.stock} left in stock."},
+                {"detail": f"В наличии только {item.product.stock} шт."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         item.quantity = quantity
