@@ -54,23 +54,28 @@ async function updateNav() {
 }
 
 async function updateCartBadge(cart) {
-    const badge = document.getElementById('cartBadge');
-    if (!badge) return;
+    const badges = document.querySelectorAll('.js-cart-badge');
+    if (!badges.length) return;
+    function setBadges(text) {
+        badges.forEach(function (b) {
+            if (text === null) {
+                b.classList.add('hidden');
+            } else {
+                b.textContent = text;
+                b.classList.remove('hidden');
+            }
+        });
+    }
     if (!auth.isAuthenticated) {
-        badge.classList.add('hidden');
+        setBadges(null);
         return;
     }
     try {
         if (!cart) cart = await apiJson('/cart/');
         const n = cart.total_quantity || 0;
-        if (n > 0) {
-            badge.textContent = n > 99 ? '99+' : n;
-            badge.classList.remove('hidden');
-        } else {
-            badge.classList.add('hidden');
-        }
+        setBadges(n > 0 ? (n > 99 ? '99+' : n) : null);
     } catch (e) {
-        badge.classList.add('hidden');
+        setBadges(null);
     }
 }
 

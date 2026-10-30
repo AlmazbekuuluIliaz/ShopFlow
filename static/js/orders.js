@@ -8,6 +8,7 @@
     const adminFilters = document.getElementById('adminFilters');
     const fSearch = document.getElementById('fSearch');
     const fStatus = document.getElementById('fStatus');
+    const fPaid = document.getElementById('fPaid');
     const fCount = document.getElementById('fCount');
 
     let isAdmin = false;
@@ -37,16 +38,18 @@
 
     function statusBadge(status) {
         const s = STATUS[status] || { label: status, cls: 'bg-gray-100 text-gray-700' };
-        return `<span class="shrink-0 whitespace-nowrap text-xs px-2.5 py-1 rounded-full ${s.cls}">${esc(s.label)}</span>`;
+        return `<span class="shrink-0 whitespace-nowrap text-xs px-2.5 py-1 rounded-lg ${s.cls}">${esc(s.label)}</span>`;
     }
 
     function statusControl(o) {
-        const allowed = ALLOWED_TRANSITIONS[o.status] || [];
+        const graph = ALLOWED_TRANSITIONS[o.status] || [];
+        const allowed = o.is_paid
+            ? graph
+            : graph.filter(function (s) { return s === 'CANCELLED'; });
         if (!allowed.length) {
             return `
             <div class="flex items-center gap-2 shrink-0">
                 ${statusBadge(o.status)}
-                <span class="text-xs text-gray-400">финальный</span>
             </div>`;
         }
         const options = ['<option value="" disabled selected>Изменить…</option>']
@@ -63,9 +66,10 @@
         </div>`;
     }
 
-    function cancelButton(o) {
-        if (!(ALLOWED_TRANSITIONS[o.status] || []).includes('CANCELLED')) return '';
-        return `<button type="button" data-cancel-id="${o.id}" class="js-cancel shrink-0 text-xs px-3 py-1 rounded-lg border border-red-300 text-red-600 hover:bg-red-50">Отменить</button>`;
+    function paymentBadge(o) {
+        return o.is_paid
+            ? '<span class="shrink-0 whitespace-nowrap text-xs px-2.5 py-1 rounded-lg bg-green-100 text-green-800">✓ Оплачено</span>'
+            : '<span class="shrink-0 whitespace-nowrap text-xs px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600">Не оплачено</span>';
     }
 
     function deleteButton(o) {
@@ -93,8 +97,17 @@
             ? `<span class="text-sm text-gray-500 ml-2">${esc(o.username)}</span>`
             : '';
         const right = isAdmin
-            ? `<div class="flex flex-wrap items-center gap-2">${statusControl(o)}${deleteButton(o)}</div>`
-            : `<div class="flex flex-wrap items-center gap-2 shrink-0">${statusBadge(o.status)}${cancelButton(o)}</div>`;
+            ? `<div class="flex flex-wrap items-center gap-2">${paymentBadge(o)}${statusControl(o)}${deleteButton(o)}</div>`
+            : '';
+        const canCancel = !isAdmin && (ALLOWED_TRANSITIONS[o.status] || []).includes('CANCELLED');
+        const canPay = !isAdmin && !o.is_paid && o.status !== 'CANCELLED';
+        const customerFooter = isAdmin ? '' : `
+            <div class="flex flex-wrap items-center gap-2 mt-4">
+                ${statusBadge(o.status)}
+                ${paymentBadge(o)}
+            </div>
+            ${canPay ? `<button type="button" data-pay-id="${o.id}" class="js-pay w-full mt-3 rounded-lg bg-green-600 text-white font-semibold py-2.5 hover:bg-green-700 transition-colors">Оплатить заказ</button>` : ''}
+            ${canCancel ? `<button type="button" data-cancel-id="${o.id}" class="js-cancel block mx-auto mt-3 text-sm text-gray-500 hover:text-red-600 transition-colors">Отменить заказ</button>` : ''}`;
         return `
         <div class="bg-white border border-gray-200 rounded-xl p-5">
             <div class="flex flex-wrap items-center justify-between gap-3">
@@ -112,6 +125,8 @@
                 <span>Итого</span>
                 <span>${esc(formatPrice(o.total_price))}</span>
             </div>
+            ${o.is_paid && o.paid_at ? `<p class="text-xs text-gray-400 mt-2">Оплачено ${esc(formatDate(o.paid_at))}</p>` : ''}
+            ${customerFooter}
         </div>`;
     }
 
@@ -128,8 +143,11 @@
         if (isAdmin) {
             const q = fSearch.value.trim().toLowerCase();
             const st = fStatus.value;
+            const paid = fPaid ? fPaid.value : '';
             list = allOrders.filter(function (o) {
                 if (st && o.status !== st) return false;
+                if (paid === 'paid' && !o.is_paid) return false;
+                if (paid === 'unpaid' && o.is_paid) return false;
                 if (q && !(o.username || '').toLowerCase().includes(q)) return false;
                 return true;
             });
@@ -202,9 +220,27 @@
         }
     }
 
+    async function payOrder(btn) {
+        const id = btn.getAttribute('data-pay-id');
+        btn.disabled = true;
+        try {
+            await apiJson(`/orders/${id}/pay/`, { method: 'POST', body: JSON.stringify({}) });
+            toast('Заказ оплачен');
+            await loadOrders();
+        } catch (err) {
+            toast((err.data && err.data.detail) || 'Не удалось оплатить заказ.', 'error');
+            btn.disabled = false;
+        }
+    }
+
     async function deleteOrder(btn) {
         const id = btn.getAttribute('data-delete-id');
-        if (!confirm('Удалить заказ #' + id + ' безвозвратно? Остаток на складе не изменится.')) return;
+        const order = allOrders.find(function (o) { return String(o.id) === String(id); });
+        const restores = order && order.status !== 'CANCELLED';
+        const note = restores
+            ? ' Товары вернутся на склад.'
+            : '';
+        if (!confirm('Удалить заказ #' + id + ' безвозвратно?' + note)) return;
         btn.disabled = true;
         try {
             await apiJson(`/orders/${id}/`, { method: 'DELETE' });
@@ -220,6 +256,11 @@
         const cancelBtn = e.target.closest('.js-cancel');
         if (cancelBtn) {
             cancelOrder(cancelBtn);
+            return;
+        }
+        const payBtn = e.target.closest('.js-pay');
+        if (payBtn) {
+            payOrder(payBtn);
             return;
         }
         const deleteBtn = e.target.closest('.js-delete');
@@ -242,6 +283,7 @@
             adminFilters.classList.remove('hidden');
             fSearch.addEventListener('input', render);
             fStatus.addEventListener('change', render);
+            if (fPaid) fPaid.addEventListener('change', render);
         }
         await loadOrders();
     }

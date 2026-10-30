@@ -20,35 +20,31 @@
 
     <details class="bg-white border border-gray-200 rounded-xl" open>
         <summary class="flex items-center justify-between p-5 cursor-pointer select-none">
-            <h2 class="text-xl font-semibold">Обзор</h2>
+            <h2 class="text-xl font-semibold">Обзоры</h2>
             <svg class="js-chevron w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </summary>
         <div class="px-5 pb-5">
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div class="rounded-lg bg-gray-50 border border-gray-100 p-4">
-                <div id="dProducts" class="text-2xl font-bold text-gray-900">—</div>
-                <div class="text-xs text-gray-500 mt-1">Товаров</div>
+                <div id="dRevenue" class="text-2xl font-bold text-gray-900">—</div>
+                <div class="text-xs text-gray-500 mt-1">Выручка (оплачено)</div>
             </div>
             <div class="rounded-lg bg-gray-50 border border-gray-100 p-4">
-                <div id="dCategories" class="text-2xl font-bold text-gray-900">—</div>
-                <div class="text-xs text-gray-500 mt-1">Категорий</div>
+                <div id="dAwaitingSum" class="text-2xl font-bold text-gray-900">—</div>
+                <div class="text-xs text-gray-500 mt-1">Ждут оплаты</div>
+            </div>
+            <div class="rounded-lg bg-gray-50 border border-gray-100 p-4">
+                <div id="dAvgCheck" class="text-2xl font-bold text-gray-900">—</div>
+                <div class="text-xs text-gray-500 mt-1">Средний чек</div>
             </div>
             <div class="rounded-lg bg-gray-50 border border-gray-100 p-4">
                 <div id="dOrders" class="text-2xl font-bold text-gray-900">—</div>
                 <div class="text-xs text-gray-500 mt-1">Заказов</div>
             </div>
-            <div class="rounded-lg bg-gray-50 border border-gray-100 p-4">
-                <div id="dRevenue" class="text-2xl font-bold text-gray-900">—</div>
-                <div class="text-xs text-gray-500 mt-1">Выручка (без отменённых)</div>
-            </div>
         </div>
-        <div class="mt-4">
-            <div id="lowStockLabel" class="text-xs text-gray-500 mb-1">Остатки товаров (≤ 3)</div>
-            <div id="dLowStock" class="flex flex-wrap gap-1.5 text-sm text-gray-700">—</div>
-        </div>
-        <div class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-            <span class="text-xs text-gray-500">Заказы по статусам:</span>
-            <div id="dStatuses" class="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm text-gray-400">—</div>
+        <div class="mt-5">
+            <div class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Требует действий</div>
+            <div id="dQueues" class="divide-y divide-gray-100 text-sm">—</div>
         </div>
         </div>
     </details>

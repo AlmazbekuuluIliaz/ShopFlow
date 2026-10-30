@@ -10,9 +10,26 @@ from rest_framework.views import APIView
 from catalog.models import Product
 from cart.models import Cart
 
-from .models import Order, OrderItem
+from .models import DeliveryTier, Order, OrderItem
 from .permissions import IsOwnerOrAdmin, is_admin
-from .serializers import OrderSerializer, OrderStatusSerializer
+from .serializers import (
+    CheckoutSerializer,
+    DeliveryTierSerializer,
+    OrderSerializer,
+    OrderStatusSerializer,
+)
+
+
+class DeliveryTierListAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        operation_id="delivery_tiers_list",
+        responses=DeliveryTierSerializer(many=True),
+    )
+    def get(self, request):
+        tiers = DeliveryTier.objects.all()
+        return Response(DeliveryTierSerializer(tiers, many=True).data)
 
 
 class OrderListCreateAPIView(APIView):
@@ -28,19 +45,27 @@ class OrderListCreateAPIView(APIView):
         orders = orders.prefetch_related("items")
         return Response(OrderSerializer(orders, many=True).data)
 
-    @extend_schema(operation_id="orders_create", request=None, responses=OrderSerializer)
+    @extend_schema(operation_id="orders_create", request=CheckoutSerializer, responses=OrderSerializer)
     def post(self, request):
         """Place an order from the current user's cart."""
-        return self._checkout(request)
+        serializer = CheckoutSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return self._checkout(request, serializer.validated_data)
 
     @transaction.atomic
-    def _checkout(self, request):
+    def _checkout(self, request, data):
         cart = Cart.objects.filter(user=request.user).first()
         items = list(cart.items.select_related("product")) if cart else []
         if not items:
             raise ValidationError("Ваша корзина пуста.")
 
-        order = Order.objects.create(user=request.user)
+        order = Order.objects.create(
+            user=request.user,
+            contact_name=data["contact_name"],
+            phone=data["phone"],
+            address=data["address"],
+            comment=data.get("comment", ""),
+        )
         for item in items:
             # Lock the product row so two checkouts can't oversell the same stock.
             product = Product.objects.select_for_update().get(pk=item.product_id)
@@ -57,6 +82,9 @@ class OrderListCreateAPIView(APIView):
             )
             product.stock -= item.quantity
             product.save(update_fields=["stock"])
+
+        order.delivery_price = DeliveryTier.price_for(order.items_total)
+        order.save(update_fields=["delivery_price"])
 
         cart.items.all().delete()  # cart is emptied once the order is placed
         return Response(
@@ -126,4 +154,18 @@ class OrderCancelAPIView(APIView):
         order = get_object_or_404(queryset, pk=pk)
         self.check_object_permissions(request, order)
         order.cancel()
+        return Response(OrderSerializer(order).data)
+
+
+class OrderPayAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
+
+    @extend_schema(operation_id="orders_pay", request=None, responses=OrderSerializer)
+    def post(self, request, pk):
+        queryset = Order.objects.prefetch_related("items")
+        if not is_admin(request.user):
+            queryset = queryset.filter(user=request.user)
+        order = get_object_or_404(queryset, pk=pk)
+        self.check_object_permissions(request, order)
+        order.pay()
         return Response(OrderSerializer(order).data)

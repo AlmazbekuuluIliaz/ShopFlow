@@ -143,6 +143,7 @@ def test_only_admin_changes_status(api, admin, customer, product):
     # Admin sees the order and can change its status.
     api.force_authenticate(admin)
     assert any(o["id"] == oid for o in api.get("/api/orders/").json())
+    assert api.post(f"/api/orders/{oid}/pay/", {}, format="json").status_code == 200
     r = api.patch(f"/api/orders/{oid}/", {"status": "CONFIRMED"}, format="json")
     assert r.status_code == 200
     assert r.json()["status"] == "CONFIRMED"

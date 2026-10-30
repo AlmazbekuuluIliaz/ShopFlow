@@ -31,7 +31,7 @@ def order(db, customer):
     product = Product.objects.create(
         category=category, name="Book", slug="book", price="10.00", stock=5,
     )
-    order = Order.objects.create(user=customer)
+    order = Order.objects.create(user=customer, is_paid=True)
     OrderItem.objects.create(order=order, product=product, price="10.00", quantity=1)
     return order
 
@@ -75,6 +75,16 @@ def test_delivered_is_terminal(api, admin, order):
 def test_customer_cannot_change_status(api, customer, order):
     api.force_authenticate(customer)
     assert _patch(api, order, "CONFIRMED").status_code == 403
+
+
+def test_unpaid_order_cannot_advance(api, admin, customer):
+    category = Category.objects.create(name="U", slug="u")
+    product = Product.objects.create(category=category, name="U1", slug="u1", price="10.00", stock=3)
+    unpaid = Order.objects.create(user=customer, is_paid=False)
+    OrderItem.objects.create(order=unpaid, product=product, price="10.00", quantity=1)
+    api.force_authenticate(admin)
+    assert _patch(api, unpaid, "CONFIRMED").status_code == 400
+    assert _patch(api, unpaid, "CANCELLED").status_code == 200
 
 
 def test_patch_to_cancelled_restores_stock(api, admin, customer):

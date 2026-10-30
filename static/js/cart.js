@@ -20,7 +20,7 @@
                         <a href="/product/?id=${it.product}" class="font-medium hover:underline block truncate">${esc(it.product_name)}</a>
                         <div class="text-sm text-gray-500">${esc(formatPrice(it.price))} за шт.</div>
                     </div>
-                    <button type="button" class="js-remove shrink-0 w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-gray-100" title="Удалить">✕</button>
+                    <button type="button" class="js-remove shrink-0 w-8 h-8 rounded-lg border border-red-300 flex items-center justify-center text-red-600 hover:bg-red-50 transition-colors" title="Удалить">✕</button>
                 </div>
                 <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mt-3">
                     <div class="flex items-center gap-2">
@@ -109,20 +109,8 @@
         updateQty(id, quantity);
     });
 
-    checkoutBtn.addEventListener('click', async function () {
-        checkoutBtn.disabled = true;
-        try {
-            await apiJson('/orders/', { method: 'POST', body: JSON.stringify({}) });
-            toast('Заказ оформлен');
-            window.location.href = '/orders/';
-        } catch (err) {
-            const data = err.data;
-            const message = (data && data.detail)
-                || (Array.isArray(data) ? data.join(' ') : null)
-                || 'Не удалось оформить заказ.';
-            toast(message, 'error');
-            checkoutBtn.disabled = false;
-        }
+    checkoutBtn.addEventListener('click', function () {
+        window.location.href = '/checkout/';
     });
 
     loadCart();

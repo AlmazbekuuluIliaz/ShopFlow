@@ -2,6 +2,27 @@ from django.conf import settings
 from django.db import models, transaction
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
+from django.utils import timezone
+
+
+class DeliveryTier(models.Model):
+    min_subtotal = models.DecimalField(max_digits=10, decimal_places=2, unique=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        ordering = ["min_subtotal"]
+
+    def __str__(self):
+        return f"от {self.min_subtotal} → доставка {self.price}"
+
+    @staticmethod
+    def price_for(subtotal):
+        tier = (
+            DeliveryTier.objects.filter(min_subtotal__lte=subtotal)
+            .order_by("-min_subtotal")
+            .first()
+        )
+        return tier.price if tier else 0
 
 
 class Order(models.Model):
@@ -32,6 +53,14 @@ class Order(models.Model):
         choices=Status.choices,
         default=Status.PENDING,
     )
+    is_paid = models.BooleanField(default=False)
+    paid_at = models.DateTimeField(null=True, blank=True)
+    contact_name = models.CharField(max_length=150, blank=True)
+    phone = models.CharField(max_length=20, blank=True)
+    address = models.CharField(max_length=255, blank=True)
+    comment = models.TextField(blank=True)
+    delivery_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -43,6 +72,18 @@ class Order(models.Model):
 
     def can_transition_to(self, new_status):
         return new_status in self.ALLOWED_TRANSITIONS.get(self.status, set())
+
+    def pay(self):
+        from rest_framework.exceptions import ValidationError
+
+        if self.is_paid:
+            raise ValidationError("Заказ уже оплачен.")
+        if self.status == self.Status.CANCELLED:
+            raise ValidationError("Нельзя оплатить отменённый заказ.")
+
+        self.is_paid = True
+        self.paid_at = timezone.now()
+        self.save(update_fields=["is_paid", "paid_at", "updated_at"])
 
     def cancel(self):
         from rest_framework.exceptions import ValidationError
@@ -61,8 +102,12 @@ class Order(models.Model):
             self.save(update_fields=["status", "updated_at"])
 
     @property
-    def total_price(self):
+    def items_total(self):
         return sum((item.subtotal for item in self.items.all()), 0)
+
+    @property
+    def total_price(self):
+        return self.items_total + self.delivery_price - self.discount
 
 
 class OrderItem(models.Model):

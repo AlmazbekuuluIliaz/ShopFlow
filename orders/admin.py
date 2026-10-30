@@ -1,6 +1,13 @@
 from django.contrib import admin
 
-from .models import Order, OrderItem
+from .models import DeliveryTier, Order, OrderItem
+
+
+@admin.register(DeliveryTier)
+class DeliveryTierAdmin(admin.ModelAdmin):
+    list_display = ("min_subtotal", "price")
+    list_editable = ("price",)
+    ordering = ("min_subtotal",)
 
 
 class OrderItemInline(admin.TabularInline):

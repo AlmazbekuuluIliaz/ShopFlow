@@ -75,7 +75,7 @@
         pagination.classList.remove('hidden');
         prevBtn.disabled = !hasPrev;
         nextBtn.disabled = !hasNext;
-        pageInfo.textContent = `Страница ${page} · товаров: ${data.count}`;
+        pageInfo.textContent = `Страница ${page} · Товаров ${data.results.length}`;
     }
 
     async function loadProducts() {

@@ -51,23 +51,11 @@
     const galleryFile = document.getElementById('galleryFile');
     let currentImages = [];
 
-    const dProducts = document.getElementById('dProducts');
-    const dCategories = document.getElementById('dCategories');
     const dOrders = document.getElementById('dOrders');
     const dRevenue = document.getElementById('dRevenue');
-    const dStatuses = document.getElementById('dStatuses');
-    const dLowStock = document.getElementById('dLowStock');
-    const lowStockLabel = document.getElementById('lowStockLabel');
-
-    const STATUS = {
-        PENDING: { label: 'Ожидает', dot: 'bg-indigo-300' },
-        CONFIRMED: { label: 'Подтверждён', dot: 'bg-indigo-400' },
-        PROCESSING: { label: 'В обработке', dot: 'bg-indigo-500' },
-        SHIPPED: { label: 'Отправлен', dot: 'bg-indigo-600' },
-        DELIVERED: { label: 'Доставлен', dot: 'bg-green-500' },
-        CANCELLED: { label: 'Отменён', dot: 'bg-gray-400' },
-    };
-    const LOW_STOCK_THRESHOLD = 3;
+    const dAwaitingSum = document.getElementById('dAwaitingSum');
+    const dAvgCheck = document.getElementById('dAvgCheck');
+    const dQueues = document.getElementById('dQueues');
 
     const categoryMap = {};
     const productMap = {};
@@ -223,69 +211,53 @@
         }
     }
 
-    const LOW_STOCK_SHOW = 6;
-    let lowStockExpanded = false;
-
-    function renderLowStock() {
-        const low = productsCache
-            .filter(function (p) { return Number(p.stock) <= LOW_STOCK_THRESHOLD; })
-            .sort(function (a, b) { return Number(a.stock) - Number(b.stock); });
-
-        lowStockLabel.textContent = `Остатки товаров (≤ ${LOW_STOCK_THRESHOLD})` + (low.length ? `: ${low.length}` : '');
-
-        if (!low.length) {
-            dLowStock.innerHTML = '<span class="text-gray-400">Все товары в достатке.</span>';
-            return;
-        }
-
-        const shown = lowStockExpanded ? low : low.slice(0, LOW_STOCK_SHOW);
-        const rest = low.length - shown.length;
-        const tags = shown.map(function (p) {
-            const n = Number(p.stock);
-            const numCls = n === 0 ? 'text-red-600 font-medium' : 'text-gray-400';
-            return `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-gray-50 border border-gray-100">${esc(p.name)} <span class="${numCls}">${esc(p.stock)}</span></span>`;
-        });
-        if (rest > 0) {
-            tags.push(`<button type="button" class="js-lowstock-toggle inline-flex items-center px-2 py-0.5 text-gray-400 hover:underline">…ещё ${rest}</button>`);
-        } else if (lowStockExpanded && low.length > LOW_STOCK_SHOW) {
-            tags.push(`<button type="button" class="js-lowstock-toggle inline-flex items-center px-2 py-0.5 text-gray-400 hover:underline">свернуть</button>`);
-        }
-        dLowStock.innerHTML = tags.join('');
+    function queueRow(label, count) {
+        return `
+        <div class="flex items-center justify-between py-2">
+            <span class="text-gray-600">${esc(label)}</span>
+            <span class="font-semibold text-gray-900">${count}</span>
+        </div>`;
     }
 
-    dLowStock.addEventListener('click', function (e) {
-        if (!e.target.closest('.js-lowstock-toggle')) return;
-        lowStockExpanded = !lowStockExpanded;
-        renderLowStock();
-    });
-
     async function refreshDashboard() {
-        dProducts.textContent = productsCache.length;
-        dCategories.textContent = Object.keys(categoryMap).length;
-        renderLowStock();
         try {
             const orders = await apiJson('/orders/');
             dOrders.textContent = orders.length;
+
             let revenue = 0;
-            const counts = {};
+            let paidCount = 0;
+            let awaitingSum = 0;
+            let awaitingPay = 0;
+            let readyToShip = 0;
+            let inTransit = 0;
+
             orders.forEach(function (o) {
-                counts[o.status] = (counts[o.status] || 0) + 1;
-                if (o.status !== 'CANCELLED') revenue += Number(o.total_price) || 0;
+                const sum = Number(o.total_price) || 0;
+                if (o.is_paid) {
+                    revenue += sum;
+                    paidCount += 1;
+                    if (['PENDING', 'CONFIRMED', 'PROCESSING'].indexOf(o.status) !== -1) readyToShip += 1;
+                    if (o.status === 'SHIPPED') inTransit += 1;
+                } else if (o.status !== 'CANCELLED') {
+                    awaitingSum += sum;
+                    awaitingPay += 1;
+                }
             });
+
             dRevenue.textContent = formatPrice(revenue);
-            const order = ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
-            const chips = order.filter(function (s) { return counts[s]; }).map(function (s) {
-                const meta = STATUS[s] || { label: s, dot: 'bg-gray-400' };
-                return `<span class="inline-flex items-center gap-1.5 text-gray-600">
-                    <span class="w-2 h-2 rounded-full ${meta.dot}"></span>
-                    ${esc(meta.label)} <span class="font-semibold text-gray-900">${counts[s]}</span>
-                </span>`;
-            });
-            dStatuses.innerHTML = chips.length ? chips.join('') : '<span class="text-gray-400">Заказов пока нет.</span>';
+            dAwaitingSum.textContent = formatPrice(awaitingSum);
+            dAvgCheck.textContent = paidCount ? formatPrice(revenue / paidCount) : '—';
+
+            dQueues.innerHTML =
+                queueRow('Ждут оплаты', awaitingPay) +
+                queueRow('Оплачены, ждут отправки', readyToShip) +
+                queueRow('Отправлены (в пути)', inTransit);
         } catch (e) {
             dOrders.textContent = '—';
             dRevenue.textContent = '—';
-            dStatuses.innerHTML = '<span class="text-gray-400">Не удалось загрузить заказы.</span>';
+            dAwaitingSum.textContent = '—';
+            dAvgCheck.textContent = '—';
+            dQueues.innerHTML = '<div class="py-2 text-gray-400">Не удалось загрузить заказы.</div>';
         }
     }
 

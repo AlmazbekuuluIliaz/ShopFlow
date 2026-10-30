@@ -87,6 +87,7 @@ def test_invalid_status_transition_rejected(api, admin, customer, product):
 def test_valid_status_transition(api, admin, customer, product):
     oid = _place_order(api, customer, product, qty=1)
     api.force_authenticate(admin)
+    api.post(f"/api/orders/{oid}/pay/", {}, format="json")
     r = api.patch(f"/api/orders/{oid}/", {"status": "CONFIRMED"}, format="json")
     assert r.status_code == 200
     assert r.json()["status"] == "CONFIRMED"

@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static assets %}
+
+{% block title %}Оформление заказа — ShopFlow{% endblock %}
+
+{% block content %}
+<h1 class="text-[28px] font-bold mb-6 text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">Оформление заказа</h1>
+
+<div id="status" class="text-gray-500"></div>
+
+<div id="empty" class="hidden text-center py-16">
+    <p class="text-white mb-4 [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">Ваша корзина пуста</p>
+    <a href="{% url 'catalog' %}" class="inline-flex px-6 py-3 rounded-lg bg-white text-indigo-600 font-bold shadow-sm hover:bg-gray-200 transition-colors">
+        Перейти в каталог
+    </a>
+</div>
+
+<div id="checkout" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <form id="form" class="lg:col-span-2 bg-white border border-gray-200 rounded-xl p-5 sm:p-6" novalidate>
+        <h2 class="font-semibold text-lg mb-5">Ваши данные</h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Имя</label>
+                <input id="fName" type="text" autocomplete="name"
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Номер телефона</label>
+                <input id="fPhone" type="tel" autocomplete="tel" placeholder="+996 ___ ______"
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Адрес</label>
+            <input id="fAddress" type="text" autocomplete="street-address" placeholder="Город, улица, дом"
+                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <div class="mt-4">
+            <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Комментарий</label>
+            <textarea id="fComment" rows="3" placeholder="Дополнительная информация, которую вы хотите добавить."
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 resize-y focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+        </div>
+    </form>
+
+    <aside class="bg-white border border-gray-200 rounded-xl p-5 h-fit">
+        <div class="flex justify-between items-baseline">
+            <span class="font-semibold">Товары</span>
+            <span id="sumItems" class="font-semibold">—</span>
+        </div>
+        <div id="sumQty" class="text-sm text-gray-500 mt-0.5"></div>
+
+        <div class="flex justify-between items-baseline border-t border-gray-100 pt-3 mt-3">
+            <span class="font-semibold">Доставка</span>
+            <span id="sumDelivery" class="text-right">—</span>
+        </div>
+
+        <div class="flex justify-between items-baseline text-lg font-bold border-t border-gray-200 pt-3 mt-3">
+            <span>Итого</span>
+            <span id="sumTotal">—</span>
+        </div>
+
+        <button id="submit" type="submit" form="form"
+                class="w-full mt-5 rounded-lg bg-green-600 text-white font-semibold py-2.5 hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            Оформить заказ
+        </button>
+        <a href="{% url 'cart' %}" class="block text-center text-sm text-gray-500 hover:text-indigo-600 mt-3 transition-colors">Вернуться в корзину</a>
+    </aside>
+</div>
+
+<div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/50"></div>
+    <div class="relative bg-white rounded-xl shadow-xl w-full max-w-lg p-6 sm:p-8">
+        <h2 class="text-center text-xl font-bold mb-6">Ваш заказ оформлен. Спасибо!</h2>
+        <dl id="receipt" class="space-y-2 text-sm"></dl>
+        <div class="text-center mt-7">
+            <a href="{% url 'catalog' %}" class="inline-flex px-8 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors">Закрыть</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static_v 'js/checkout.js' %}"></script>
+{% endblock %}
